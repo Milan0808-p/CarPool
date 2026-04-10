@@ -12,6 +12,7 @@ import com.example.demo.dto.authDtos.AuthResponse;
 import com.example.demo.dto.authDtos.LoginRequest;
 import com.example.demo.dto.authDtos.UserDto;
 import com.example.demo.entity.authEntity.RefreshToken;
+import com.example.demo.entity.authEntity.Role;
 import com.example.demo.entity.authEntity.User;
 import com.example.demo.repository.AuthRepository;
 import com.example.demo.repository.RefreshTokenRepo;
@@ -45,13 +46,13 @@ public class AuthService {
 		}
 		User user = new User();
 		
-		user.setRole(userDto.getRole());
+		user.setRole(Role.valueOf(userDto.getRole().toUpperCase()));
 		user.setEmail(userDto.getEmail());
 		user.setUsername(userDto.getUsername());
 		user.setPassword(passwordEncoder.encode(userDto.getPassword()));
 	
 		if (user.getRole() == null) {
-			user.setRole("USER");
+			user.setRole(Role.USER);
 		}
 
 		repo.save(user);
@@ -71,7 +72,7 @@ public class AuthService {
 			throw new RuntimeException("Invalid password");
 		}
 
-		String accessToken = jwtUtil.createAccessToken(user.getEmail(), user.getRole());
+		String accessToken = jwtUtil.createAccessToken(user.getEmail(), user.getRole().name());
 		String refreshToken = jwtUtil.createRefreshToken(user.getEmail());
 
 		// delete old token
@@ -86,11 +87,11 @@ public class AuthService {
 		refreshTokenRepo.save(rt); // ✅ FIX
 
 		AuthResponse response = new AuthResponse(
-				user.getId(),
-				accessToken,
-				refreshToken,
+				user.getId(), 
+				accessToken, 
+				refreshToken, 
 				user.getEmail(),
-				user.getRole()
+				user.getRole().name() 
 				);
 
 		return ResponseEntity.ok(response);
