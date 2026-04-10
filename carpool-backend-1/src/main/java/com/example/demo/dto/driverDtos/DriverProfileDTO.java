@@ -1,8 +1,10 @@
-package com.example.demo.dto.authDtos;
+package com.example.demo.dto.driverDtos;
+
+import org.springframework.web.multipart.MultipartFile;
 
 import jakarta.validation.constraints.NotBlank;
 
-public class DriverRegisterDTO {
+public class DriverProfileDTO {
 
     @NotBlank(message = "Car model is required")
     private String carModel;
@@ -12,6 +14,8 @@ public class DriverRegisterDTO {
 
     @NotBlank(message = "License number is required")
     private String licenseNumber;
-
-    // getters and setters
+    
+    private MultipartFile driverImage;
+    private MultipartFile licenseImage;
+ 
 }
