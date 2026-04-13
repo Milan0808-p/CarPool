@@ -26,6 +26,7 @@ public class AuthService {
 	
 	User user;
 	
+	
 	@Autowired
 	AuthRepository repo;
 	

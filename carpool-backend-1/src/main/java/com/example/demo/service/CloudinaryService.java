@@ -14,12 +14,21 @@ public class CloudinaryService {
     @Autowired
     private Cloudinary cloudinary;
 
-    public String uploadFile(MultipartFile file) {
+    public String uploadFile(MultipartFile file, String folderName, String fileName) {
         try {
-            Map uploadResult = cloudinary.uploader().upload(file.getBytes(), ObjectUtils.emptyMap());
-            return uploadResult.get("secure_url").toString(); 
+            Map uploadResult = cloudinary.uploader().upload(
+                    file.getBytes(),
+                    ObjectUtils.asMap(
+                            "folder", folderName,
+                            "public_id", fileName
+                    )
+            );
+
+            return uploadResult.get("secure_url").toString();
+
         } catch (Exception e) {
-            throw new RuntimeException("Failed to upload image");
+            e.printStackTrace();
+            throw new RuntimeException("Failed to upload image: " + e.getMessage());
         }
     }
 }
