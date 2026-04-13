@@ -25,8 +25,9 @@ public class SecurityConfig {
 		return http.csrf(csrf -> csrf.disable())
 				.authorizeHttpRequests(auth -> auth
 						.requestMatchers("/login", "/register","/refresh").permitAll() // Must be first
+						.requestMatchers("/api/auth/**").permitAll()
 						.requestMatchers("/send-otp", "/reset-password", "/verify-otp").permitAll()
-						.requestMatchers("/admin/**").hasRole("ADMIN") // Then specific
+//						.requestMatchers("/admin/**").hasRole("ADMIN") // Then specific
 						.anyRequest().authenticated() // Then general
 				)
 				// This makes server scalable

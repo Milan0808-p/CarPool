@@ -1,12 +1,15 @@
 package com.example.demo.controller;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.demo.dto.driverDtos.DriverProfileDTO;
+import com.example.demo.service.driver.DriverService;
 
 import lombok.RequiredArgsConstructor;
 
@@ -15,11 +18,15 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class DriverController {
 	
-	@PostMapping("/driver/profile")
+	@Autowired
+	DriverService driverService;
+	
+	@PostMapping("/profile")
 	public ResponseEntity<?> createDriverProfile(
-	        @ModelAttribute DriverProfileDTO dto) {
+	        @ModelAttribute DriverProfileDTO dto,
+	        @RequestHeader Long userId) {
 
-	    return driverService.createProfile(dto);
+	    return driverService.createProfile(dto,userId);
 	}
 	
 }
