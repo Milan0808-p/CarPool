@@ -1,7 +1,5 @@
 package com.example.demo.entity.authEntity;
 
-import com.example.demo.dto.authDtos.UserDto;
-
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -26,7 +24,8 @@ public class User {
 		private String phone;
 		
 		private String password;
-		
+		
+
 		@Enumerated(EnumType.STRING)
 	    private Role role; // USER, DRIVER, BOTH
 

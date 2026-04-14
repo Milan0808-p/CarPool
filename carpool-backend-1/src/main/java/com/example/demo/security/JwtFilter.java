@@ -4,6 +4,7 @@ package com.example.demo.security;
 import java.io.IOException;
 import java.util.*;
 
+import com.example.demo.repository.BlackListTokenRepo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -27,6 +28,8 @@ public class JwtFilter extends OncePerRequestFilter {
 	JwtUtil jwtUtil;
 	@Autowired
 	CustomUserDetailService userDetailsService;
+	@Autowired
+	BlackListTokenRepo blacklistRepo;
 
 	@Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
@@ -42,8 +45,19 @@ public class JwtFilter extends OncePerRequestFilter {
 			return;
 		}
 
-		try {
 		    String token = authHeader.substring(7);
+
+		if (blacklistRepo.existsByToken(token)) {
+			System.out.println("Token is blacklisted");
+
+			//  Just continue without setting auth
+			filterChain.doFilter(request, response);
+			return;
+		}
+
+
+
+		try {
 		    String email = jwtUtil.extractEmail(token);
 
 		    if (email != null && SecurityContextHolder.getContext().getAuthentication() == null) {
@@ -71,7 +85,7 @@ public class JwtFilter extends OncePerRequestFilter {
 		    }
 
 		} catch (Exception e) {
-		    // 🔥 VERY IMPORTANT
+		    // VERY IMPORTANT
 		    // Don't break the request, just continue
 		    System.out.println("JWT Error: " + e.getMessage());
 		}

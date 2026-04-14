@@ -27,11 +27,11 @@ public class DriverService {
 
         try {
 
-            // ✅ 1. Get logged-in user (replace with SecurityContext later)
+            //  1. Get logged-in user (replace with SecurityContext later)
             User user = authRepository.findById(userId)
                     .orElseThrow(() -> new RuntimeException("User not found"));
 
-            // ✅ 2. Check existing driver profile
+            //  2. Check existing driver profile
             Driver existing = driverRepository.findByUserId(user.getId());
             
             if(user.getRole().equals("USER")) {
@@ -46,10 +46,10 @@ public class DriverService {
                         .body("Driver profile already exists");
             }
 
-            // ✅ 3. Create folder
+            // 3. Create folder
             String folderName = "drivers/profile_" + user.getId();
 
-            // ✅ 4. Upload images safely
+            //  4. Upload images safely
             String driverImageUrl = null;
             String licenseImageUrl = null;
             String adharImageUrl = null;
@@ -78,17 +78,17 @@ public class DriverService {
                 );
             }
 
-            // ❗ Optional safety check
+            //  Optional safety check
             if (driverImageUrl == null || licenseImageUrl == null || adharImageUrl==null) {
                 return ResponseEntity
                         .badRequest()
                         .body("all images are required");
             }
 
-            // ✅ 5. Create Driver entity
+            //  5. Create Driver entity
             Driver driver = new Driver();
             driver.setUser(user);
-            driver.setCarModel(dto.getCarModel());
+            driver.setCarName(dto.getCarName());
             driver.setCarNumber(dto.getCarNumber());
             driver.setLicenseNumber(dto.getLicenseNumber());
             driver.setProfileImage(driverImageUrl);
@@ -96,7 +96,7 @@ public class DriverService {
             driver.setAdharImage(adharImageUrl);
             driver.setIsVerified(false);
 
-            // ✅ 6. Save
+            //  6. Save
             driverRepository.save(driver);
 
             return ResponseEntity.ok("Driver profile created successfully ✅");
