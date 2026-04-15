@@ -2,6 +2,7 @@ package com.example.demo.entity.driverEntity;
 
 import com.example.demo.entity.authEntity.User;
 
+import com.example.demo.entity.journeyEntity.Journey;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 import lombok.AllArgsConstructor;
@@ -9,6 +10,8 @@ import lombok.Data;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+
+import java.util.List;
 
 @Entity
 @Getter
@@ -43,4 +46,7 @@ public class Driver {
     private String adharImage;
 
     private Boolean isVerified = false;
+
+    @OneToMany(mappedBy = "driver", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Journey> journeys;
 }
