@@ -28,6 +28,8 @@ public class SecurityConfig {
 						.requestMatchers("/api/auth/**").permitAll()
 						.requestMatchers("/api/logout/**").permitAll()
 						.requestMatchers("/send-otp", "/reset-password", "/verify-otp").permitAll()
+								.requestMatchers("/api/route/**").permitAll()
+								.requestMatchers("/api/route/cities").permitAll()// Public access to route endpoints
 //						.requestMatchers("/admin/**").hasRole("ADMIN") // Then specific
 						.anyRequest().authenticated() // Then general
 				)
