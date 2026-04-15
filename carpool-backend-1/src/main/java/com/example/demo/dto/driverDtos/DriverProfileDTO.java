@@ -1,5 +1,6 @@
 package com.example.demo.dto.driverDtos;
 
+import jakarta.validation.constraints.NotNull;
 import org.springframework.web.multipart.MultipartFile;
 
 import jakarta.validation.constraints.NotBlank;
@@ -24,7 +25,6 @@ public class DriverProfileDTO {
 
     @NotBlank(message = "License number is required")
     private String licenseNumber;
-    
     private MultipartFile driverImage;
     private MultipartFile licenseImage;
     private MultipartFile adharImage;

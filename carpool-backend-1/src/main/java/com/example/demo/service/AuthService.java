@@ -227,7 +227,8 @@ public class AuthService {
 
 
 
-	@Scheduled(fixedRate = 60000)
+	@Scheduled(fixedDelay = 1000000)
+	@Transactional
 	public void cleanBlacklist() {
 		blacklistRepo.deleteByExpiryDateBefore(new Date());
 	}

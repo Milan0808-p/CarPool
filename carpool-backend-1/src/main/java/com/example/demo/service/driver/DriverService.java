@@ -1,5 +1,6 @@
 package com.example.demo.service.driver;
 
+import com.example.demo.dto.driverDtos.DriverProfileResponseDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -26,7 +27,7 @@ public class DriverService {
     public ResponseEntity<?> createProfile(DriverProfileDTO dto, Long userId) {
 
         try {
-
+            long start = System.currentTimeMillis();
             //  1. Get logged-in user (replace with SecurityContext later)
             User user = authRepository.findById(userId)
                     .orElseThrow(() -> new RuntimeException("User not found"));
@@ -54,7 +55,17 @@ public class DriverService {
             String licenseImageUrl = null;
             String adharImageUrl = null;
 
-            if (dto.getDriverImage() != null && !dto.getDriverImage().isEmpty()) {
+
+            if (dto.getDriverImage() == null || dto.getDriverImage().isEmpty() ||
+                    dto.getLicenseImage() == null || dto.getLicenseImage().isEmpty() ||
+                    dto.getAdharImage() == null || dto.getAdharImage().isEmpty()) {
+
+                return ResponseEntity
+                        .badRequest()
+                        .body("All documents (Driver, License, Aadhar) are required");
+            }
+
+            if (!dto.getDriverImage().isEmpty()) {
                 driverImageUrl = cloudinaryService.uploadFile(
                         dto.getDriverImage(),
                         folderName,
@@ -62,7 +73,7 @@ public class DriverService {
                 );
             }
 
-            if (dto.getLicenseImage() != null && !dto.getLicenseImage().isEmpty()) {
+            if (!dto.getLicenseImage().isEmpty()) {
                 licenseImageUrl = cloudinaryService.uploadFile(
                         dto.getLicenseImage(),
                         folderName,
@@ -70,7 +81,7 @@ public class DriverService {
                 );
             }
             
-            if (dto.getAdharImage() != null && !dto.getAdharImage().isEmpty()) {
+            if (!dto.getAdharImage().isEmpty()) {
                 adharImageUrl = cloudinaryService.uploadFile(
                         dto.getAdharImage(),
                         folderName,
@@ -78,12 +89,7 @@ public class DriverService {
                 );
             }
 
-            //  Optional safety check
-            if (driverImageUrl == null || licenseImageUrl == null || adharImageUrl==null) {
-                return ResponseEntity
-                        .badRequest()
-                        .body("all images are required");
-            }
+
 
             //  5. Create Driver entity
             Driver driver = new Driver();
@@ -99,7 +105,23 @@ public class DriverService {
             //  6. Save
             driverRepository.save(driver);
 
-            return ResponseEntity.ok("Driver profile created successfully ✅");
+            long end = System.currentTimeMillis();
+            System.out.println("Start time "+ start+" end time "+ end);
+            System.out.println("Time taken: " + (end - start));
+
+            DriverProfileResponseDTO response = new DriverProfileResponseDTO(
+                    user.getId(),
+                    driver.getCarName(),
+                    driver.getCarNumber(),
+                    driver.getLicenseNumber(),
+                    driverImageUrl,
+                    licenseImageUrl,
+                    adharImageUrl,
+                    driver.getIsVerified(),
+                    "Driver profile created successfully ✅"
+            );
+
+            return ResponseEntity.ok(response);
 
         } catch (Exception e) {
             return ResponseEntity
