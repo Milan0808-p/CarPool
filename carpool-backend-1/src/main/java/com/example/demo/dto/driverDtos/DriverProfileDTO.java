@@ -2,8 +2,6 @@ package com.example.demo.dto.driverDtos;
 
 import org.springframework.web.multipart.MultipartFile;
 
-import com.example.demo.dto.authDtos.AuthResponse;
-
 import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -18,8 +16,8 @@ import lombok.Setter;
 @Data
 public class DriverProfileDTO {
 
-    @NotBlank(message = "Car model is required")
-    private String carModel;
+    @NotBlank(message = "Car name is required")
+    private String carName;
 
     @NotBlank(message = "Car number is required")
     private String carNumber;

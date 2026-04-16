@@ -4,6 +4,7 @@ package com.example.demo.security;
 import java.io.IOException;
 import java.util.*;
 
+import com.example.demo.repository.BlackListTokenRepo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -27,6 +28,8 @@ public class JwtFilter extends OncePerRequestFilter {
 	JwtUtil jwtUtil;
 	@Autowired
 	CustomUserDetailService userDetailsService;
+	@Autowired
+	BlackListTokenRepo blacklistRepo;
 
 	@Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
@@ -42,13 +45,24 @@ public class JwtFilter extends OncePerRequestFilter {
 			return;
 		}
 
-		try {
 		    String token = authHeader.substring(7);
-		    String email = jwtUtil.extractEmail(token);
+		    
+		    String jti = jwtUtil.extractJti(token);
+		    
+		if (blacklistRepo.existsByToken(jti)) {
+			response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            response.getWriter().write("Token is blacklisted");
+            return;
+		}
 
-		    if (email != null && SecurityContextHolder.getContext().getAuthentication() == null) {
 
-		        UserDetails userDetails = userDetailsService.loadUserByUsername(email);
+
+		try {
+		    Long userId = jwtUtil.extractUserId(token);
+
+		    if (userId != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+
+		        UserDetails userDetails = userDetailsService.loadUserByUsername(String.valueOf(userId));
 		        
 		        // this is validate user using token and userDetails
 		        if (jwtUtil.validateToken(token, userDetails)) {
@@ -56,7 +70,7 @@ public class JwtFilter extends OncePerRequestFilter {
 		        	// Create a logged-in user object for Spring Security
 		            UsernamePasswordAuthenticationToken authToken =
 		                    new UsernamePasswordAuthenticationToken(
-		                            email,
+		                    		userId,
 		                            null,
 		                            userDetails.getAuthorities()
 		                    );
@@ -71,7 +85,7 @@ public class JwtFilter extends OncePerRequestFilter {
 		    }
 
 		} catch (Exception e) {
-		    // 🔥 VERY IMPORTANT
+		    // VERY IMPORTANT
 		    // Don't break the request, just continue
 		    System.out.println("JWT Error: " + e.getMessage());
 		}

@@ -17,10 +17,10 @@ public class CloudinaryConfig {
 	
 	@Value("${cloudinary.api-secret}")
 	private String apiSecret;
-	
+
 	@Bean
 	public Cloudinary cloudinary() {
-	    return new Cloudinary(ObjectUtils.asMap(
+		return new Cloudinary(ObjectUtils.asMap(
 	            "cloud_name", clodName,
 	            "api_key", apiKey,
 	            "api_secret", apiSecret

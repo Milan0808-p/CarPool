@@ -1,9 +1,6 @@
 package com.example.demo.dto.authDtos;
 
-import org.jspecify.annotations.Nullable;
-
 import jakarta.persistence.*;
-import jakarta.validation.constraints.*;
 import jakarta.validation.constraints.*;
 import lombok.*;
 
@@ -15,7 +12,7 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @Data
-public class UserDto {
+public class UserDTO {
 	
 //		@Id
 //		@GeneratedValue(strategy = GenerationType.IDENTITY)

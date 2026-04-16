@@ -26,6 +26,7 @@ public class SecurityConfig {
 				.authorizeHttpRequests(auth -> auth
 						.requestMatchers("/login", "/register","/refresh").permitAll() // Must be first
 						.requestMatchers("/api/auth/**").permitAll()
+						.requestMatchers("/api/logout/**").permitAll()
 						.requestMatchers("/send-otp", "/reset-password", "/verify-otp").permitAll()
 //						.requestMatchers("/admin/**").hasRole("ADMIN") // Then specific
 						.anyRequest().authenticated() // Then general

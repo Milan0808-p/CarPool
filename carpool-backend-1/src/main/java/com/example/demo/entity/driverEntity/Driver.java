@@ -1,6 +1,5 @@
 package com.example.demo.entity.driverEntity;
 
-import com.example.demo.dto.authDtos.AuthResponse;
 import com.example.demo.entity.authEntity.User;
 
 import jakarta.persistence.*;
@@ -30,7 +29,7 @@ public class Driver {
     private User user;
 
     @NotBlank(message = "Car model is required")
-    private String carModel;
+    private String carName;
 
     @NotBlank(message = "Car number is required")
     private String carNumber;

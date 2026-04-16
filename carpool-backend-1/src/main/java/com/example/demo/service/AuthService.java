@@ -3,131 +3,143 @@ package com.example.demo.service;
 import java.util.Date;
 import java.util.Map;
 
+import com.example.demo.entity.authEntity.BlackListToken;
+import com.example.demo.repository.BlackListTokenRepo;
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.ExpiredJwtException;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.scheduling.annotation.EnableScheduling;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import com.example.demo.dto.authDtos.AuthResponse;
-import com.example.demo.dto.authDtos.LoginRequest;
-import com.example.demo.dto.authDtos.UserDto;
+//import com.cloudinary.api.ApiResponse;
+import com.example.demo.dto.authDtos.AuthResponseDTO;
+import com.example.demo.dto.authDtos.LoginRequestDTO;
+import com.example.demo.dto.authDtos.UserDTO;
+import com.example.demo.dto.authDtos.UserResponseDTO;
 import com.example.demo.entity.authEntity.RefreshToken;
 import com.example.demo.entity.authEntity.Role;
 import com.example.demo.entity.authEntity.User;
+import com.example.demo.exception.InvalidCredentialsException;
+import com.example.demo.exception.InvalidTokenException;
+import com.example.demo.exception.ResourceNotFoundException;
 import com.example.demo.repository.AuthRepository;
 import com.example.demo.repository.RefreshTokenRepo;
 import com.example.demo.security.JwtUtil;
-
-
+import com.example.demo.dto.ApiResponse;
 import jakarta.transaction.Transactional;
 
 @Service
+@EnableScheduling
 public class AuthService {
-	
-	User user;
-	
-	
+
 	@Autowired
-	AuthRepository repo;
-	
+	private AuthRepository repo;
+
 	@Autowired
 	private PasswordEncoder passwordEncoder;
+
+	@Autowired
+	private JwtUtil jwtUtil;
 	
 	@Autowired
-	JwtUtil jwtUtil;
+	private RefreshTokenRepo refreshTokenRepo;
 	
 	@Autowired
-	RefreshTokenRepo refreshTokenRepo;
+	private BlackListTokenRepo blacklistRepo;
 	
-	public ResponseEntity<?> registerUser(UserDto userDto) {
-		if(repo.existsByEmail(userDto.getEmail())) {
-			return ResponseEntity
-					.badRequest()
-					.body("Error: Email is already taken!");
-		}
-		User user = new User();
+	public ResponseEntity<ApiResponse<UserResponseDTO>> registerUser(UserDTO userDto) {
 		
+		if (repo.existsByEmail(userDto.getEmail())) {
+			return ResponseEntity.status(400).body(
+	                new ApiResponse<>("error", "Email is already registered!", null)
+	        );
+		}
+		
+		User user = new User();
 		user.setRole(Role.valueOf(userDto.getRole().toUpperCase()));
 		user.setEmail(userDto.getEmail());
+		user.setPhone(userDto.getPhone());
 		user.setUsername(userDto.getUsername());
 		user.setPassword(passwordEncoder.encode(userDto.getPassword()));
-	
+
 		if (user.getRole() == null) {
 			user.setRole(Role.USER);
 		}
 
 		repo.save(user);
-		
-		return ResponseEntity.ok(Map.of(
-			    "message", "User registered successfully"
-			));
-	}
+
+		UserResponseDTO data = UserResponseDTO.builder()
+				.username(user.getUsername())
+				.role(user.getRole().name())
+				.phone(user.getPhone())
+				.email(user.getEmail())
+				.build();
 	
+		return ResponseEntity.ok(
+	            new ApiResponse<>("success", "Register successful", data)
+	    );
+		
+	}
+
 	@Transactional
-	public ResponseEntity<?> userLogin(LoginRequest request) {
+	public ResponseEntity<ApiResponse<AuthResponseDTO>> userLogin(LoginRequestDTO request) {
 
 		User user = repo.findByEmail(request.getEmail())
-				.orElseThrow(() -> new RuntimeException("User not found"));
+				.orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
-		if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
-			throw new RuntimeException("Invalid password");
-		}
+		 if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
+			 throw new InvalidCredentialsException("Invalid credentials");
+		 }
 
-		String accessToken = jwtUtil.createAccessToken(user.getEmail(), user.getRole().name());
-		String refreshToken = jwtUtil.createRefreshToken(user.getEmail());
+		String accessToken = jwtUtil.createAccessToken(user.getId(), user.getRole().name());
+		String refreshToken = jwtUtil.createRefreshToken(user.getId());
 
-		// delete old token
+		// delete old refresh token (or use device-based later)
 		refreshTokenRepo.deleteByUserId(user.getId());
-		refreshTokenRepo.flush();
 
 		RefreshToken rt = new RefreshToken();
 		rt.setToken(refreshToken);
 		rt.setUser(user);
-		rt.setExpiryDate(new Date(System.currentTimeMillis() + 7 * 24 * 60 * 60 * 1000));
+		rt.setExpiryDate(new Date(System.currentTimeMillis() + 7L * 24 * 60 * 60 * 1000));
 
-		refreshTokenRepo.save(rt); // ✅ FIX
+		refreshTokenRepo.save(rt);
 
-		AuthResponse response = new AuthResponse(
-				user.getId(), 
-				accessToken, 
-				refreshToken, 
-				user.getEmail(),
-				user.getRole().name() 
-				);
+		AuthResponseDTO data = AuthResponseDTO.builder()
+		        .userId(user.getId())
+		        .accessToken(accessToken)
+		        .refreshToken(refreshToken)
+		        .email(user.getEmail())
+		        .role(user.getRole().name())
+		        .build();
 
-		return ResponseEntity.ok(response);
+	    return ResponseEntity.ok(
+	            new ApiResponse<>("success", "Login successful", data)
+	    );
 	}
 
-	public ResponseEntity<?> userLogout(String token) {
+	public ResponseEntity<ApiResponse<Object>> userLogout(String token) {
 
-	    try {
-	        String email = jwtUtil.extractEmail(token);
+		if (!jwtUtil.validateToken(token)) {
+			throw new InvalidTokenException("Invalid token");
+		}
 
-	        User user = repo.findByEmail(email)
-	                .orElseThrow(() -> new RuntimeException("User not found"));
+		Long userId = jwtUtil.extractUserId(token);
+		String jti = jwtUtil.extractJti(token);
+		Date expiry = jwtUtil.extractClaim(token, Claims::getExpiration);
 
-	        refreshTokenRepo.deleteByUserId(user.getId());
+		refreshTokenRepo.deleteByUserId(userId);
+		blacklistRepo.save(new BlackListToken(jti, expiry));
 
-	        return ResponseEntity.ok(Map.of(
-	                "status", "success",
-	                "message", "Logout successful"
-	        ));
-
-	    } catch (io.jsonwebtoken.ExpiredJwtException e) {
-
-	        //  Still allow logout (important)
-	        return ResponseEntity.ok(Map.of(
-	                "status", "success",
-	                "message", "Token expired but logout successful"
-	        ));
-
-	    } catch (Exception e) {
-
-	        return ResponseEntity.status(500).body(Map.of(
-	                "status", "error",
-	                "message", "Logout failed"
-	        ));
-	    }
+		return ResponseEntity.ok(
+				new ApiResponse<>("success", "Logout successful", null));
 	}
-	
+
+	@Scheduled(fixedRate = 60000)
+	public void cleanBlacklist() {
+		blacklistRepo.deleteByExpiryDateBefore(new Date());
+	}
 }
