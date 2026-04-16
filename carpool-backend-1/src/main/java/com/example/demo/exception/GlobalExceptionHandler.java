@@ -36,6 +36,34 @@ public class GlobalExceptionHandler {
                 .body(new ApiResponse<>("error", "Something went wrong", null));
     }
     
+    @ExceptionHandler(TokenMissingException.class)
+    public ResponseEntity<ApiResponse<Object>> handleTokenMissing(TokenMissingException ex) {
+
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                .body(new ApiResponse<>("error", ex.getMessage(), null));
+    }
+    
+    @ExceptionHandler(ResourceAlreadyExistsException.class)
+    public ResponseEntity<ApiResponse<Object>> handleEmailExists(ResourceAlreadyExistsException ex) {
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(new ApiResponse<>("error", ex.getMessage(), null));
+    }
+    
+    @ExceptionHandler(AccessDeniedException.class)
+    public ResponseEntity<ApiResponse<Object>> handleAccessDenied(AccessDeniedException ex) {
+
+        return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                .body(new ApiResponse<>("error", ex.getMessage(), null));
+    }
+    
+    @ExceptionHandler(BadRequestException.class)
+    public ResponseEntity<ApiResponse<Object>> handleBadRequest(BadRequestException ex) {
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(new ApiResponse<>("error", ex.getMessage(), null));
+    }
+    
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ApiResponse<Object>> handleValidationExceptions(
             MethodArgumentNotValidException ex) {

@@ -5,9 +5,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import com.example.demo.dto.ApiResponse;
 import com.example.demo.dto.driverDtos.DriverProfileDTO;
+import com.example.demo.entity.authEntity.Role;
 import com.example.demo.entity.authEntity.User;
 import com.example.demo.entity.driverEntity.Driver;
+import com.example.demo.exception.AccessDeniedException;
+import com.example.demo.exception.BadRequestException;
+import com.example.demo.exception.ResourceAlreadyExistsException;
+import com.example.demo.exception.ResourceNotFoundException;
 import com.example.demo.repository.AuthRepository;
 import com.example.demo.repository.DriverRepository;
 import com.example.demo.service.CloudinaryService;
@@ -24,48 +30,40 @@ public class DriverService {
     @Autowired
     private AuthRepository authRepository;
 
-    public ResponseEntity<?> createProfile(DriverProfileDTO dto, Long userId) {
+    public ResponseEntity<ApiResponse<DriverProfileResponseDTO>> createProfile(DriverProfileDTO dto, Long userId) {
 
-        try {
             long start = System.currentTimeMillis();
+            //  Get logged-in user (replace with SecurityContext later)
+            User user = authRepository.findById(userId)
+            		.orElseThrow(() -> new ResourceNotFoundException("User not found"));
+
+            //  Check existing driver profile
+            Driver existing = driverRepository.findByUserId(user.getId());
+            
+            if (user.getRole()==Role.USER){
+    		    throw new AccessDeniedException("Only Driver can create profile");
+    		}
+            
+            if (existing != null) {
+    		    throw new ResourceAlreadyExistsException("Driver profile already exists");
+    		}
+
+            // Create folder
+            String folderName = "drivers/profile_" + user.getId();
+
+            // Upload images safely
+            String driverImageUrl = null;
+            String licenseImageUrl = null;
+            String adharImageUrl = null;
+
 
             if (dto.getDriverImage() == null || dto.getDriverImage().isEmpty() ||
                     dto.getLicenseImage() == null || dto.getLicenseImage().isEmpty() ||
                     dto.getAdharImage() == null || dto.getAdharImage().isEmpty()) {
 
-                return ResponseEntity
-                        .badRequest()
-                        .body("All documents (Driver, License, Aadhar) are required");
-            }
-
-
-            //  1. Get logged-in user (replace with SecurityContext later)
-            User user = authRepository.findById(userId)
-                    .orElseThrow(() -> new RuntimeException("User not found"));
-
-            //  2. Check existing driver profile
-            Driver existing = driverRepository.findByUserId(user.getId());
-            
-            if(user.getRole().equals("USER")) {
-            	return ResponseEntity
-                        .badRequest()
-                        .body("Only Driver can create profile");
+            	throw new BadRequestException("All documents (Driver, License, Aadhar) are required");
             }
             
-            if (existing != null) {
-                return ResponseEntity
-                        .badRequest()
-                        .body("Driver profile already exists");
-            }
-
-            // 3. Create folder
-            String folderName = "drivers/profile_" + user.getId();
-
-            //  4. Upload images safely
-            String driverImageUrl = null;
-            String licenseImageUrl = null;
-            String adharImageUrl = null;
-
 
             if (!dto.getDriverImage().isEmpty()) {
                 driverImageUrl = cloudinaryService.uploadFile(
@@ -93,43 +91,40 @@ public class DriverService {
 
 
 
-            //  5. Create Driver entity
-            Driver driver = new Driver();
-            driver.setUser(user);
-            driver.setCarName(dto.getCarName());
-            driver.setCarNumber(dto.getCarNumber());
-            driver.setLicenseNumber(dto.getLicenseNumber());
-            driver.setProfileImage(driverImageUrl);
-            driver.setLicenseImage(licenseImageUrl);
-            driver.setAdharImage(adharImageUrl);
-            driver.setIsVerified(false);
+            // Create Driver entity
+            Driver driver = Driver.builder()
+                    .user(user)
+                    .carName(dto.getCarName())
+                    .carNumber(dto.getCarNumber())
+                    .licenseNumber(dto.getLicenseNumber())
+                    .profileImage(driverImageUrl)
+                    .licenseImage(licenseImageUrl)
+                    .adharImage(adharImageUrl)
+                    .isVerified(false)
+                    .build();
 
-            //  6. Save
+            // Save
             driverRepository.save(driver);
 
             long end = System.currentTimeMillis();
             System.out.println("Start time "+ start+" end time "+ end);
             System.out.println("Time taken: " + (end - start));
 
-            DriverProfileResponseDTO response = new DriverProfileResponseDTO(
-                    user.getId(),
-                    driver.getCarName(),
-                    driver.getCarNumber(),
-                    driver.getLicenseNumber(),
-                    driverImageUrl,
-                    licenseImageUrl,
-                    adharImageUrl,
-                    driver.getIsVerified(),
-                    "Driver profile created successfully ✅"
-            );
+            DriverProfileResponseDTO response = DriverProfileResponseDTO.builder()
+                    .userId(user.getId())
+                    .carName(driver.getCarName())
+                    .carNumber(driver.getCarNumber())
+                    .licenseNumber(driver.getLicenseNumber())
+                    .driverImageUrl(driverImageUrl)
+                    .licenseImageUrl(licenseImageUrl)
+                    .adharImageUrl(adharImageUrl)
+                    .isVerified(driver.getIsVerified())
+                    .build();
 
-            return ResponseEntity.ok(response);
-
-        } catch (Exception e) {
-            return ResponseEntity
-                    .badRequest()
-                    .body("Error: " + e.getMessage());
-        }
+            return ResponseEntity.ok(
+    	            new ApiResponse<>("success", "Driver profile created successfully ✅", response)
+    	    );
+            
     }
 
 }

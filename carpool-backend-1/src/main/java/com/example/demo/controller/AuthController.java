@@ -14,6 +14,7 @@ import com.example.demo.dto.authDtos.AuthResponseDTO;
 import com.example.demo.dto.authDtos.LoginRequestDTO;
 import com.example.demo.dto.authDtos.UserDTO;
 import com.example.demo.dto.authDtos.UserResponseDTO;
+import com.example.demo.exception.TokenMissingException;
 import com.example.demo.service.AuthService;
 
 import jakarta.servlet.http.HttpServletRequest;
@@ -44,11 +45,9 @@ public class AuthController {
 
 	    String authHeader = request.getHeader("Authorization");
 
-//	    if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-//	    	return ResponseEntity.status(401).body(
-//	                new ApiResponse<>("error", "Token missing", null)
-//	        );
-//	    }
+	    if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+	        throw new TokenMissingException("Authorization token is missing");
+	    }
 
 	    String token = authHeader.substring(7);
 

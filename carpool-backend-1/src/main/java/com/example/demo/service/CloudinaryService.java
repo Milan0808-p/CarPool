@@ -15,30 +15,6 @@ public class CloudinaryService {
     @Autowired
     private Cloudinary cloudinary;
 
-//    public String uploadFile(MultipartFile file, String folderName, String fileName) {
-//        try {
-//            Map uploadResult = cloudinary.uploader().upload(
-//                    file.getInputStream(),
-//                    ObjectUtils.asMap(
-//                            "folder", folderName,
-//                            "public_id", fileName
-//                    )
-//            );
-//
-//            return uploadResult.get("secure_url").toString();
-//
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//            throw new RuntimeException("Failed to upload image: " + e.getMessage());
-//        }
-//    }
-
-
-
-
-    //Optimized
-
-
     public String uploadFile(MultipartFile file, String folderName, String fileName) {
         File tempFile = null;
         try {
@@ -63,7 +39,7 @@ public class CloudinaryService {
             throw new RuntimeException("Failed to upload image: " + e.getMessage());
         } finally {
             if (tempFile != null && tempFile.exists()) {
-                tempFile.delete(); // 🧹 cleanup
+                tempFile.delete(); //  cleanup
             }
         }
     }

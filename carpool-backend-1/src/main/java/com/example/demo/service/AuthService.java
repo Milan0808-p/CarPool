@@ -23,6 +23,7 @@ import com.example.demo.dto.authDtos.UserResponseDTO;
 import com.example.demo.entity.authEntity.RefreshToken;
 import com.example.demo.entity.authEntity.Role;
 import com.example.demo.entity.authEntity.User;
+import com.example.demo.exception.ResourceAlreadyExistsException;
 import com.example.demo.exception.InvalidCredentialsException;
 import com.example.demo.exception.InvalidTokenException;
 import com.example.demo.exception.ResourceNotFoundException;
@@ -54,18 +55,24 @@ public class AuthService {
 	public ResponseEntity<ApiResponse<UserResponseDTO>> registerUser(UserDTO userDto) {
 		
 		if (repo.existsByEmail(userDto.getEmail())) {
-			return ResponseEntity.status(400).body(
-	                new ApiResponse<>("error", "Email is already registered!", null)
-	        );
+		    throw new ResourceAlreadyExistsException("User is already registered!");
 		}
 		
-		User user = new User();
-		user.setRole(Role.valueOf(userDto.getRole().toUpperCase()));
-		user.setEmail(userDto.getEmail());
-		user.setPhone(userDto.getPhone());
-		user.setUsername(userDto.getUsername());
-		user.setPassword(passwordEncoder.encode(userDto.getPassword()));
+//		User user = new User();
+//		user.setRole(Role.valueOf(userDto.getRole().toUpperCase()));
+//		user.setEmail(userDto.getEmail());
+//		user.setPhone(userDto.getPhone());
+//		user.setUsername(userDto.getUsername());
+//		user.setPassword(passwordEncoder.encode(userDto.getPassword()));
 
+		User user = User.builder()
+				.role(Role.valueOf(userDto.getRole().toUpperCase()))
+				.email(userDto.getEmail())
+				.phone(userDto.getPhone())
+				.username(userDto.getUsername())
+				.password(passwordEncoder.encode(userDto.getPassword()))
+				.build();
+		
 		if (user.getRole() == null) {
 			user.setRole(Role.USER);
 		}
@@ -85,7 +92,7 @@ public class AuthService {
 		
 	}
 
-	@Transactional
+	
 	public ResponseEntity<ApiResponse<AuthResponseDTO>> userLogin(LoginRequestDTO request) {
 
 		User user = repo.findByEmail(request.getEmail())
@@ -101,11 +108,17 @@ public class AuthService {
 		// delete old refresh token (or use device-based later)
 		refreshTokenRepo.deleteByUserId(user.getId());
 
-		RefreshToken rt = new RefreshToken();
-		rt.setToken(refreshToken);
-		rt.setUser(user);
-		rt.setExpiryDate(new Date(System.currentTimeMillis() + 7L * 24 * 60 * 60 * 1000));
-
+//		RefreshToken rt = new RefreshToken();
+//		rt.setToken(refreshToken);
+//		rt.setUser(user);
+//		rt.setExpiryDate(new Date(System.currentTimeMillis() + 7L * 24 * 60 * 60 * 1000));
+		
+		RefreshToken rt = RefreshToken.builder()
+				.token(refreshToken)
+				.user(user)
+				.expiryDate(new Date(System.currentTimeMillis() + 7L * 24 * 60 * 60 * 1000))
+				.build();
+				
 		refreshTokenRepo.save(rt);
 
 		AuthResponseDTO data = AuthResponseDTO.builder()
@@ -137,6 +150,7 @@ public class AuthService {
 		return ResponseEntity.ok(
 				new ApiResponse<>("success", "Logout successful", null));
 	}
+	
 	@Scheduled(fixedDelay = 1000000)
 	@Transactional
 	public void cleanBlacklist() {

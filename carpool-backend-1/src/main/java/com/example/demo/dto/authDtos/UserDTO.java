@@ -5,18 +5,12 @@ import jakarta.validation.constraints.*;
 import lombok.*;
 
 
-//@Entity
-//@Table(name = "users")
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Data
 public class UserDTO {
-	
-//		@Id
-//		@GeneratedValue(strategy = GenerationType.IDENTITY)
-//		private Long id;
 		
 	@Column(nullable = false)
     @NotBlank(message = "Email is required")
