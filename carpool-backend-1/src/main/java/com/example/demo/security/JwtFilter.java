@@ -46,23 +46,23 @@ public class JwtFilter extends OncePerRequestFilter {
 		}
 
 		    String token = authHeader.substring(7);
-
-		if (blacklistRepo.existsByToken(token)) {
-			System.out.println("Token is blacklisted");
-
-			//  Just continue without setting auth
-			filterChain.doFilter(request, response);
-			return;
+		    
+		    String jti = jwtUtil.extractJti(token);
+		    
+		if (blacklistRepo.existsByToken(jti)) {
+			response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            response.getWriter().write("Token is blacklisted");
+            return;
 		}
 
 
 
 		try {
-		    String email = jwtUtil.extractEmail(token);
+		    Long userId = jwtUtil.extractUserId(token);
 
-		    if (email != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+		    if (userId != null && SecurityContextHolder.getContext().getAuthentication() == null) {
 
-		        UserDetails userDetails = userDetailsService.loadUserByUsername(email);
+		        UserDetails userDetails = userDetailsService.loadUserByUsername(String.valueOf(userId));
 		        
 		        // this is validate user using token and userDetails
 		        if (jwtUtil.validateToken(token, userDetails)) {
@@ -70,7 +70,7 @@ public class JwtFilter extends OncePerRequestFilter {
 		        	// Create a logged-in user object for Spring Security
 		            UsernamePasswordAuthenticationToken authToken =
 		                    new UsernamePasswordAuthenticationToken(
-		                            email,
+		                    		userId,
 		                            null,
 		                            userDetails.getAuthorities()
 		                    );

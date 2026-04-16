@@ -9,8 +9,11 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.example.demo.dto.ApiResponse;
+import com.example.demo.dto.authDtos.AuthResponseDTO;
 import com.example.demo.dto.authDtos.LoginRequestDTO;
 import com.example.demo.dto.authDtos.UserDTO;
+import com.example.demo.dto.authDtos.UserResponseDTO;
 import com.example.demo.service.AuthService;
 
 import jakarta.servlet.http.HttpServletRequest;
@@ -27,23 +30,25 @@ public class AuthController {
 	AuthService authService;
 	
 	@PostMapping("/register")
-	public ResponseEntity<?> registerUser(@Valid @RequestBody UserDTO user) {
+	public ResponseEntity<ApiResponse<UserResponseDTO>> registerUser(@Valid @RequestBody UserDTO user) {
 		return authService.registerUser(user);
 	}
 	
 	@PostMapping("/login")
-	public ResponseEntity<?> login(@RequestBody LoginRequestDTO loginRequestDTO) {
+	public ResponseEntity<ApiResponse<AuthResponseDTO>> login(@Valid @RequestBody LoginRequestDTO loginRequestDTO) {
 		return authService.userLogin(loginRequestDTO);
 	}
 	
 	@PostMapping("/logout")
-	public ResponseEntity<?> logout(HttpServletRequest request) {  //HttpServletRequest :All data coming from client request (header, body,url,etc)
+	public ResponseEntity<ApiResponse<Object>> logout(HttpServletRequest request) {  //HttpServletRequest :All data coming from client request (header, body,url,etc)
 
 	    String authHeader = request.getHeader("Authorization");
 
-	    if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-	        return ResponseEntity.status(400).body(Map.of("message", "Token missing"));
-	    }
+//	    if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+//	    	return ResponseEntity.status(401).body(
+//	                new ApiResponse<>("error", "Token missing", null)
+//	        );
+//	    }
 
 	    String token = authHeader.substring(7);
 
