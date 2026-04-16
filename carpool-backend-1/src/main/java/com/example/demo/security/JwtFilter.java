@@ -47,17 +47,21 @@ public class JwtFilter extends OncePerRequestFilter {
 
 		    String token = authHeader.substring(7);
 		    
-		    String jti = jwtUtil.extractJti(token);
-		    
-		if (blacklistRepo.existsByToken(jti)) {
-			response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-            response.getWriter().write("Token is blacklisted");
-            return;
-		}
-
-
-
 		try {
+			
+			if (token.split("\\.").length != 3) {
+	            sendError(response, "Invalid JWT format");
+	            return;
+	        }
+			
+			String jti = jwtUtil.extractJti(token);
+		    
+			if (blacklistRepo.existsByToken(jti)) {
+				response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+	            response.getWriter().write("Token is blacklisted");
+	            return;
+			}
+			
 		    Long userId = jwtUtil.extractUserId(token);
 
 		    if (userId != null && SecurityContextHolder.getContext().getAuthentication() == null) {
@@ -84,15 +88,27 @@ public class JwtFilter extends OncePerRequestFilter {
 		        }
 		    }
 
+		} catch (io.jsonwebtoken.MalformedJwtException e) {
+		    sendError(response, "Invalid token format");
+		    return;
+		} catch (io.jsonwebtoken.ExpiredJwtException e) {
+		    sendError(response, "Token expired");
+		    return;
 		} catch (Exception e) {
-		    // VERY IMPORTANT
-		    // Don't break the request, just continue
-		    System.out.println("JWT Error: " + e.getMessage());
+		    sendError(response, "Invalid token");
+		    return;
 		}
 
 		filterChain.doFilter(request, response);
 	}
 	
 	
+	private void sendError(HttpServletResponse response, String message) throws IOException {
+	    response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+	    response.setContentType("application/json");
+	    response.getWriter().write(
+	        "{\"status\":\"error\",\"message\":\"" + message + "\",\"data\":null}"
+	    );
+	}
 	
 }

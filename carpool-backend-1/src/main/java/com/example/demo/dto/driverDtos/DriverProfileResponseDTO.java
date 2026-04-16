@@ -1,12 +1,14 @@
 package com.example.demo.dto.driverDtos;
 
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
+@Builder
 public class DriverProfileResponseDTO {
 
     private Long userId;
@@ -19,5 +21,4 @@ public class DriverProfileResponseDTO {
     private String adharImageUrl;
 
     private Boolean isVerified;
-    private String message;
 }
