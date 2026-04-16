@@ -28,6 +28,17 @@ public class DriverService {
 
         try {
             long start = System.currentTimeMillis();
+
+            if (dto.getDriverImage() == null || dto.getDriverImage().isEmpty() ||
+                    dto.getLicenseImage() == null || dto.getLicenseImage().isEmpty() ||
+                    dto.getAdharImage() == null || dto.getAdharImage().isEmpty()) {
+
+                return ResponseEntity
+                        .badRequest()
+                        .body("All documents (Driver, License, Aadhar) are required");
+            }
+
+
             //  1. Get logged-in user (replace with SecurityContext later)
             User user = authRepository.findById(userId)
                     .orElseThrow(() -> new RuntimeException("User not found"));
@@ -55,15 +66,6 @@ public class DriverService {
             String licenseImageUrl = null;
             String adharImageUrl = null;
 
-
-            if (dto.getDriverImage() == null || dto.getDriverImage().isEmpty() ||
-                    dto.getLicenseImage() == null || dto.getLicenseImage().isEmpty() ||
-                    dto.getAdharImage() == null || dto.getAdharImage().isEmpty()) {
-
-                return ResponseEntity
-                        .badRequest()
-                        .body("All documents (Driver, License, Aadhar) are required");
-            }
 
             if (!dto.getDriverImage().isEmpty()) {
                 driverImageUrl = cloudinaryService.uploadFile(

@@ -27,7 +27,6 @@ public class SecurityConfig {
 						.requestMatchers("/login", "/register","/refresh").permitAll() // Must be first
 						.requestMatchers("/api/auth/**").permitAll()
 						.requestMatchers("/api/logout/**").permitAll()
-								.requestMatchers("/api/journeys/**").permitAll()
 						.requestMatchers("/send-otp", "/reset-password", "/verify-otp").permitAll()
 //						.requestMatchers("/admin/**").hasRole("ADMIN") // Then specific
 						.anyRequest().authenticated() // Then general
