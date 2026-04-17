@@ -1,15 +1,21 @@
-package com.example.demo.dto.journeyDtos;
-
-import lombok.Data;
+package com.example.demo.dto.driverDtos;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.List;
 
-@Data
-public class CreateJourneyDTO {
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
-    private Long driverId;
+@Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+public class JourneyUpdateDTO {
+	
+	private Long driverId;
 
     private String startLocation;
     private String endLocation;
@@ -21,6 +27,4 @@ public class CreateJourneyDTO {
     private LocalTime departureTime;
 
     private List<String> stops;
-
-
 }

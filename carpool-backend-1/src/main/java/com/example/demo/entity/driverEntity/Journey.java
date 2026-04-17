@@ -1,6 +1,5 @@
-package com.example.demo.entity.journeyEntity;
+package com.example.demo.entity.driverEntity;
 
-import com.example.demo.entity.driverEntity.Driver;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.Data;

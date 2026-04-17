@@ -2,7 +2,6 @@ package com.example.demo.entity.driverEntity;
 
 import com.example.demo.entity.authEntity.User;
 
-import com.example.demo.entity.journeyEntity.Journey;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 import lombok.AllArgsConstructor;

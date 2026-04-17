@@ -1,11 +1,14 @@
-package com.example.demo.service.Journey;
+package com.example.demo.service.passenger;
 
-import com.example.demo.dto.journeyDtos.CreateJourneyDTO;
-import com.example.demo.dto.journeyDtos.JourneyResponseDTO;
-import com.example.demo.entity.journeyEntity.Journey;
-import com.example.demo.entity.journeyEntity.RouteStop;
+import com.example.demo.dto.driverDtos.JourneyRequestDTO;
+import com.example.demo.dto.driverDtos.JourneyResponseDTO;
+import com.example.demo.dto.driverDtos.JourneyUpdateDTO;
+import com.example.demo.entity.driverEntity.Journey;
+import com.example.demo.entity.driverEntity.RouteStop;
 import com.example.demo.repository.JourneyRepository;
 import lombok.RequiredArgsConstructor;
+
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -47,5 +50,6 @@ public class PassengerJourneyService {
 
         return responseList;
     }
+	
 
 }

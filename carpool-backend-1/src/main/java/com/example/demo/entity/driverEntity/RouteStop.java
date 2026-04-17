@@ -1,4 +1,4 @@
-package com.example.demo.entity.journeyEntity;
+package com.example.demo.entity.driverEntity;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;

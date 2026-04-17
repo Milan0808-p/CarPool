@@ -1,4 +1,4 @@
-package com.example.demo.dto.journeyDtos;
+package com.example.demo.dto.driverDtos;
 
 import lombok.Builder;
 import lombok.Data;
