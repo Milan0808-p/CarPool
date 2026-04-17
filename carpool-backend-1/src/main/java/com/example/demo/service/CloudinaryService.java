@@ -63,9 +63,8 @@ public class CloudinaryService {
             throw new RuntimeException("Failed to upload image: " + e.getMessage());
         } finally {
             if (tempFile != null && tempFile.exists()) {
-                tempFile.delete(); // 🧹 cleanup
+                tempFile.delete();
             }
         }
     }
-
 }

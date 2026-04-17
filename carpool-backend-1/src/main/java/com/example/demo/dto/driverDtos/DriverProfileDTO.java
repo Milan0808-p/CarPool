@@ -28,4 +28,5 @@ public class DriverProfileDTO {
     private MultipartFile driverImage;
     private MultipartFile licenseImage;
     private MultipartFile adharImage;
+    
 }

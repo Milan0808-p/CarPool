@@ -1,16 +1,11 @@
 package com.example.demo.service.Journey;
-
 import com.example.demo.dto.journeyDtos.CreateJourneyDTO;
 import com.example.demo.entity.driverEntity.Driver;
 import com.example.demo.entity.journeyEntity.Journey;
-import com.example.demo.entity.journeyEntity.RouteStop;
 import com.example.demo.repository.DriverRepository;
 import com.example.demo.repository.JourneyRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
-import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -20,8 +15,8 @@ public class JourneyService {
     private final JourneyRepository journeyRepository;
     private final DriverRepository driverRepository;
 
-    // 🚀 CREATE JOURNEY
-    public CreateJourneyDTO createJourney(CreateJourneyDTO request) {
+
+    public CreateJourneyDTO createJourney(CreateJourneyDTO request){
 
         Driver driver = driverRepository.findById(request.getDriverId())
                 .orElseThrow(() -> new RuntimeException("Driver not found"));
@@ -35,23 +30,29 @@ public class JourneyService {
         journey.setDepartureTime(request.getDepartureTime());
         journey.setDriver(driver);
 
-        // 🔥 Route Stops
-        List<RouteStop> stopList = new ArrayList<>();
+        // ✅ Store stops
+        journey.setStops(convertListToString(request.getStops()));
 
-        for (int i = 0; i < request.getStops().size(); i++) {
-            RouteStop stop = new RouteStop();
-            stop.setCityName(request.getStops().get(i));
-            stop.setStopOrder(i);
-            stop.setJourney(journey);
+        // ✅ Generate embedding (IMPORTANT FORMAT)
+        String embedding = generateEmbedding(request.getStops());
+        journey.setRouteEmbedding(embedding);
 
-            stopList.add(stop);
-        }
+        journeyRepository.save(journey);
 
-        journey.setStops(stopList);
+        return request;
+    }
 
-         journeyRepository.save(journey);
+    private String convertListToString(List<String> stops) {
+        return String.join(",", stops);
+    }
 
-         return request;
+    private String generateEmbedding(List<String> stops) {
+        return "[0.12,0.45,0.67,0.89,0.23,0.78]";
+    }
+
+    public List<Journey> searchSimilarRoutes(List<Double> queryVector) {
+        String vector = queryVector.toString(); // "[0.1,0.2,...]"
+        return journeyRepository.findNearest(vector);
     }
 
 }

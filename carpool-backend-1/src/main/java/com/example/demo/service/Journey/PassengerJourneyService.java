@@ -3,7 +3,6 @@ package com.example.demo.service.Journey;
 import com.example.demo.dto.journeyDtos.CreateJourneyDTO;
 import com.example.demo.dto.journeyDtos.JourneyResponseDTO;
 import com.example.demo.entity.journeyEntity.Journey;
-import com.example.demo.entity.journeyEntity.RouteStop;
 import com.example.demo.repository.JourneyRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -33,11 +32,7 @@ public class PassengerJourneyService {
                     .departureTime(j.getDepartureTime())
                     .price(j.getPrice())
                     .availableSeats(j.getAvailableSeats())
-                    .stops(
-                            j.getStops().stream()
-                                    .map(RouteStop::getCityName)
-                                    .toList()
-                    )
+
                     .driverName(j.getDriver().getUser().getUsername())
                     .carName(j.getDriver().getCarName())
                     .build();
