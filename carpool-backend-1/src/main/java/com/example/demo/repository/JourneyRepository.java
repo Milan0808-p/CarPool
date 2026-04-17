@@ -5,6 +5,7 @@ import org.springframework.data.jpa.repository.Query;
 
 import com.example.demo.entity.driverEntity.Journey;
 
+import java.time.LocalDate;
 import java.util.List;
 
 public interface JourneyRepository extends JpaRepository<Journey, Long> {
@@ -16,4 +17,8 @@ public interface JourneyRepository extends JpaRepository<Journey, Long> {
         JOIN FETCH d.user
     """)
     List<Journey> findAllWithDetails();
+
+	boolean existsByDriverIdAndDateAndStartLocationAndEndLocation(Long driverId, LocalDate date, String startLocation,
+			String endLocation);
+	
 }
