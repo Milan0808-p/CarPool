@@ -19,37 +19,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class PassengerJourneyService {
 
-    private final JourneyRepository journeyRepository;
-    public List<JourneyResponseDTO> getAllJourneys() {
 
-        List<Journey> journeys = journeyRepository.findAllWithDetails();
-
-        List<JourneyResponseDTO> responseList = new ArrayList<>();
-
-        for (Journey j : journeys) {
-
-            JourneyResponseDTO response = JourneyResponseDTO.builder()
-                    .journeyId(j.getId())
-                    .startLocation(j.getStartLocation())
-                    .endLocation(j.getEndLocation())
-                    .date(j.getJourneyDate())
-                    .departureTime(j.getDepartureTime())
-                    .price(j.getPrice())
-                    .availableSeats(j.getAvailableSeats())
-                    .stops(
-                            j.getStops().stream()
-                                    .map(RouteStop::getCityName)
-                                    .toList()
-                    )
-                    .driverName(j.getDriver().getUser().getUsername())
-                    .carName(j.getDriver().getCarName())
-                    .build();
-
-            responseList.add(response);
-        }
-
-        return responseList;
-    }
-
+	
 
 }
