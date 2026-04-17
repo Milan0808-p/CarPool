@@ -6,6 +6,7 @@ import lombok.Data;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.Date;
 import java.util.List;
 
 @Entity
@@ -19,7 +20,7 @@ public class Journey {
     private String endLocation;
     private int availableSeats;
     private double price;
-    private LocalDate date;
+    private LocalDate journeyDate;
     private LocalTime departureTime;
 
     @OneToMany(mappedBy = "journey", cascade = CascadeType.ALL, fetch = FetchType.LAZY)

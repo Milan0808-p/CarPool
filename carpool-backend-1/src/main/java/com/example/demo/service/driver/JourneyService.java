@@ -8,7 +8,6 @@ import com.example.demo.entity.driverEntity.RouteStop;
 import com.example.demo.repository.DriverRepository;
 import com.example.demo.repository.JourneyRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
@@ -33,7 +32,7 @@ public class JourneyService {
         journey.setEndLocation(request.getEndLocation());
         journey.setAvailableSeats(request.getAvailableSeats());
         journey.setPrice(request.getPrice());
-        journey.setDate(request.getDate());
+        journey.setJourneyDate(request.getDate());
         journey.setDepartureTime(request.getDepartureTime());
         journey.setDriver(driver);
 
@@ -68,7 +67,7 @@ public class JourneyService {
         journey.setEndLocation(request.getEndLocation());
         journey.setAvailableSeats(request.getAvailableSeats());
         journey.setPrice(request.getPrice());
-        journey.setDate(request.getDate());
+        journey.setJourneyDate(request.getDate());
         journey.setDepartureTime(request.getDepartureTime());
         journey.setDriver(driver);
         

@@ -32,7 +32,7 @@ public class PassengerJourneyService {
                     .journeyId(j.getId())
                     .startLocation(j.getStartLocation())
                     .endLocation(j.getEndLocation())
-                    .date(j.getDate())
+                    .date(j.getJourneyDate())
                     .departureTime(j.getDepartureTime())
                     .price(j.getPrice())
                     .availableSeats(j.getAvailableSeats())
@@ -50,6 +50,6 @@ public class PassengerJourneyService {
 
         return responseList;
     }
-	
+
 
 }

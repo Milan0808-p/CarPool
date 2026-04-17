@@ -16,4 +16,6 @@ public interface JourneyRepository extends JpaRepository<Journey, Long> {
         JOIN FETCH d.user
     """)
     List<Journey> findAllWithDetails();
+
+    List<Journey> findMatchingJourneys(String startLocation, String destination);
 }
