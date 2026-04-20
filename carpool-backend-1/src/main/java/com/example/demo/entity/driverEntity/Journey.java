@@ -26,7 +26,7 @@ public class Journey {
     private String endLocation;
     private int availableSeats;
     private double price;
-    private LocalDate journeyDate;
+    private LocalDate date;
     private LocalTime departureTime;
 
     @OneToMany(
