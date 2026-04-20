@@ -6,11 +6,11 @@ import java.time.LocalDateTime;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class ApiResponse<T> {   // ✅ MUST HAVE <T>
+public class ApiResponse<T> {   // MUST HAVE <T>
 
     private String status;
     private String message;
-    private T data;             // ✅ generic type
+    private T data;             // generic type
     private LocalDateTime timestamp;
 
     public ApiResponse(String status, String message, T data) {

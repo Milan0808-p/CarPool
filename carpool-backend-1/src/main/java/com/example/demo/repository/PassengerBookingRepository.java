@@ -5,7 +5,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.util.*;
-import com.example.demo.entity.passangerEntity.PassengerBooking;
+import com.example.demo.entity.passengerEntity.PassengerBooking;
 
 public interface PassengerBookingRepository extends JpaRepository<PassengerBooking, Long> {
 

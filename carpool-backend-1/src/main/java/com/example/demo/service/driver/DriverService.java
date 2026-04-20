@@ -20,7 +20,7 @@ import com.example.demo.entity.authEntity.User;
 import com.example.demo.entity.driverEntity.Driver;
 import com.example.demo.entity.driverEntity.Journey;
 import com.example.demo.entity.driverEntity.RouteStop;
-import com.example.demo.entity.passangerEntity.PassengerBooking;
+import com.example.demo.entity.passengerEntity.PassengerBooking;
 import com.example.demo.exception.AccessDeniedException;
 import com.example.demo.exception.BadRequestException;
 import com.example.demo.exception.InvalidCredentialsException;
