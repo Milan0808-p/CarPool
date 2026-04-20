@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.demo.dto.ApiResponse;
+import com.example.demo.dto.driverDtos.DriverBookingListDTO;
 import com.example.demo.dto.driverDtos.DriverProfileDTO;
 import com.example.demo.dto.driverDtos.DriverProfileResponseDTO;
 import com.example.demo.dto.driverDtos.JourneyRequestDTO;
@@ -68,9 +69,17 @@ public class DriverController {
 	}
 	
 	@GetMapping("/bookings")
-	public ResponseEntity<ApiResponse<List<PassengerBooking>>> getBookings( @RequestHeader(value = "driverId", required = false) Long driverId){
+	public ResponseEntity<ApiResponse<List<DriverBookingListDTO>>> getBookings( @RequestHeader(value = "driverId", required = false) Long driverId){
 		
 		return driverService.getBookings(driverId);
 	}
 	
+	@PutMapping("/bookings/{bookingId}/status")
+	public ResponseEntity<ApiResponse<DriverBookingListDTO>> updateBookingStatus(
+	        @PathVariable Long bookingId,
+	        @RequestParam String status,
+	        @RequestHeader Long driverId) {
+
+	    return driverService.updateBookingStatus(bookingId, driverId, status);
+	}
 }
