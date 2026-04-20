@@ -1,6 +1,14 @@
 package com.example.demo.service.driver;
 
 import com.example.demo.dto.driverDtos.DriverProfileResponseDTO;
+import com.example.demo.dto.driverDtos.JourneyRequestDTO;
+import com.example.demo.dto.driverDtos.JourneyResponseDTO;
+import com.example.demo.dto.driverDtos.JourneyUpdateDTO;
+
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -10,12 +18,18 @@ import com.example.demo.dto.driverDtos.DriverProfileDTO;
 import com.example.demo.entity.authEntity.Role;
 import com.example.demo.entity.authEntity.User;
 import com.example.demo.entity.driverEntity.Driver;
+import com.example.demo.entity.driverEntity.Journey;
+import com.example.demo.entity.driverEntity.RouteStop;
+import com.example.demo.entity.passangerEntity.PassengerBooking;
 import com.example.demo.exception.AccessDeniedException;
 import com.example.demo.exception.BadRequestException;
+import com.example.demo.exception.InvalidCredentialsException;
 import com.example.demo.exception.ResourceAlreadyExistsException;
 import com.example.demo.exception.ResourceNotFoundException;
 import com.example.demo.repository.AuthRepository;
 import com.example.demo.repository.DriverRepository;
+import com.example.demo.repository.JourneyRepository;
+import com.example.demo.repository.PassengerBookingRepository;
 import com.example.demo.service.CloudinaryService;
 
 @Service
@@ -29,7 +43,13 @@ public class DriverService {
 
     @Autowired
     private AuthRepository authRepository;
-
+    
+    @Autowired
+    private JourneyRepository journeyRepository;
+    
+    @Autowired
+    private PassengerBookingRepository passengerBookingRepository;
+    
     public ResponseEntity<ApiResponse<DriverProfileResponseDTO>> createProfile(DriverProfileDTO dto, Long userId) {
 
             long start = System.currentTimeMillis();
@@ -126,5 +146,177 @@ public class DriverService {
     	    );
             
     }
+    
+ // CREATE JOURNEY
+    public ResponseEntity<ApiResponse<JourneyResponseDTO>> createJourney(JourneyRequestDTO request, Long driverId) {
+    	
+    	if (request.getDate().isBefore( LocalDate.now())) {
+    	    throw new InvalidCredentialsException("Past date not allowed");
+    	}
+    	
+        Driver driver = driverRepository.findById(driverId)
+                .orElseThrow(() -> new ResourceNotFoundException("Driver not found"));
+        
+        boolean alreadyExists = journeyRepository
+                .existsByDriverIdAndDateAndStartLocationAndEndLocation(
+                		driverId,
+                        request.getDate(),
+                        request.getStartLocation(),
+                        request.getEndLocation()
+                );
+
+        if (alreadyExists) {
+            throw new ResourceAlreadyExistsException("Same journey already exists");
+        }
+        
+        Journey journey = Journey.builder()
+                .startLocation(request.getStartLocation())
+                .endLocation(request.getEndLocation())
+                .availableSeats(request.getAvailableSeats())
+                .price(request.getPrice())
+                .date(request.getDate())
+                .departureTime(request.getDepartureTime())
+                .driver(driver)
+                .build();
+
+        // Route Stops
+        List<RouteStop> stopList = new ArrayList<>();
+
+        for (int i = 0; i < request.getStops().size(); i++) {
+        	RouteStop stop = RouteStop.builder()
+        	        .cityName(request.getStops().get(i))
+        	        .stopOrder(i)
+        	        .journey(journey)
+        	        .build();
+
+            stopList.add(stop);
+        }
+
+        journey.setStops(stopList);
+
+        journeyRepository.save(journey);
+        
+        List<String> stopNames = journey.getStops()
+                .stream()
+                .map(RouteStop::getCityName)
+                .toList();
+        
+        JourneyResponseDTO response= JourneyResponseDTO.builder()
+        		.journeyId(journey.getId())
+        		.startLocation(journey.getStartLocation())
+        		.endLocation(journey.getEndLocation())
+        		.departureTime(journey.getDepartureTime())
+        		.price(journey.getPrice())
+        		.availableSeats(journey.getAvailableSeats())
+        		.driverName(journey.getDriver().getUser().getUsername())
+        		.carName(journey.getDriver().getCarName())
+        		.stops(stopNames)
+        		.date(journey.getDate())
+        		.build();
+
+        return ResponseEntity.ok(
+	            new ApiResponse<>("success", "Ride Creatation successful", response)
+	    );
+    }
+
+    public ResponseEntity<ApiResponse<JourneyResponseDTO>> updateJourney(JourneyUpdateDTO request,Long journyId, Long driverId) {
+    	
+    	if (request.getDate().isBefore( LocalDate.now())) {
+    	    throw new InvalidCredentialsException("Past date not allowed");
+    	}
+    	
+        Journey journey = journeyRepository.findById(journyId)
+                .orElseThrow(() -> new ResourceNotFoundException("Journey not found"));
+
+        if (!journey.getDriver().getId().equals(driverId)) {
+            throw new AccessDeniedException("You are not authorized to update this journey");
+        }
+        
+        Driver driver = driverRepository.findById(driverId)
+                .orElseThrow(() -> new ResourceNotFoundException("Driver not found"));
+        
+        journey.setStartLocation(request.getStartLocation());
+        journey.setEndLocation(request.getEndLocation());
+        journey.setAvailableSeats(request.getAvailableSeats());
+        journey.setPrice(request.getPrice());
+        journey.setDate(request.getDate());
+        journey.setDepartureTime(request.getDepartureTime());
+        journey.setDriver(driver);
+
+
+        if (request.getStops() != null) {
+            List<RouteStop> existingStops = journey.getStops();
+            List<String> newStops = request.getStops();
+
+            for (int i = 0; i < newStops.size(); i++) {
+                if (i < existingStops.size()) {
+                    RouteStop stop = existingStops.get(i);
+                    stop.setCityName(newStops.get(i));
+                    stop.setStopOrder(i);
+                } else {
+                    RouteStop newStop = RouteStop.builder()
+                            .cityName(newStops.get(i))
+                            .stopOrder(i)
+                            .journey(journey)
+                            .build();
+                    existingStops.add(newStop);
+                }
+            }
+
+            if (existingStops.size() > newStops.size()) {
+                existingStops.subList(newStops.size(), existingStops.size()).clear();
+            }
+        }
+
+        journeyRepository.save(journey);
+        
+        List<String> stopNames = journey.getStops()
+                .stream()
+                .map(RouteStop::getCityName)
+                .toList();
+        
+        JourneyResponseDTO response= JourneyResponseDTO.builder()
+        		.journeyId(journey.getId())
+        		.startLocation(journey.getStartLocation())
+        		.endLocation(journey.getEndLocation())
+        		.departureTime(journey.getDepartureTime())
+        		.price(journey.getPrice())
+        		.availableSeats(journey.getAvailableSeats())
+        		.driverName(journey.getDriver().getUser().getUsername())
+        		.carName(journey.getDriver().getCarName())
+        		.stops(stopNames)
+        		.date(journey.getDate())
+        		.build();
+
+        return ResponseEntity.ok(
+	            new ApiResponse<>("success", "Ride Updatation successful", response)
+	    );
+    }
+
+    public ResponseEntity<ApiResponse<Void>> deleteJourney(Long journeyId, Long driverId) {
+
+        Journey journey = journeyRepository.findById(journeyId)
+                .orElseThrow(() -> new ResourceNotFoundException("Journey not found"));
+
+        if (!journey.getDriver().getId().equals(driverId)) {
+            throw new AccessDeniedException("You are not authorized to delete this journey");
+        }
+
+        journeyRepository.delete(journey);
+
+        return ResponseEntity.ok(
+                new ApiResponse<>("success", "Journey deleted successfully", null)
+        );
+    }
+
+	public ResponseEntity<ApiResponse<List<PassengerBooking>>> getBookings(Long driverId) {
+		// TODO Auto-generated method stub
+		
+	    List<PassengerBooking> passengerBooking = passengerBookingRepository.findByDriverId(driverId);
+	    
+		System.out.print(passengerBooking);
+		return ResponseEntity.ok(new ApiResponse<>("success", "Ride find successful", passengerBooking));
+		
+	}
 
 }

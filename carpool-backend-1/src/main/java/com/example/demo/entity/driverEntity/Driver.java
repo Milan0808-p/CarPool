@@ -1,6 +1,7 @@
 package com.example.demo.entity.driverEntity;
 
 import com.example.demo.entity.authEntity.User;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
@@ -49,5 +50,6 @@ public class Driver {
     private Boolean isVerified = false;
 
     @OneToMany(mappedBy = "driver", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnore
     private List<Journey> journeys;
 }

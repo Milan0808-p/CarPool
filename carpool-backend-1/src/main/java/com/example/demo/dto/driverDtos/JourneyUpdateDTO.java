@@ -16,8 +16,8 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class JourneyUpdateDTO {
 	
-	@NotNull(message = "Driver ID is required")
-    private Long driverId;
+//	@NotNull(message = "Driver ID is required")
+//    private Long driverId;
 
     @NotBlank(message = "Start location is required")
     private String startLocation;

@@ -11,8 +11,8 @@ import jakarta.validation.constraints.*;
 @Data
 public class JourneyRequestDTO {
 
-	@NotBlank(message = "Driver ID is required")
-    private Long driverId;
+//	@NotBlank(message = "Driver ID is required")
+//    private Long driverId;
 
     @NotBlank(message = "Start location is required")
     private String startLocation;
@@ -27,6 +27,7 @@ public class JourneyRequestDTO {
     private double price;
 
     @NotNull(message = "Date is required")
+    @FutureOrPresent(message = "Journey date cannot be in the past")
     private LocalDate date;
 
     @NotNull(message = "Departure time is required")
