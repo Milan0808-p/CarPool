@@ -21,4 +21,6 @@ public interface PassengerBookingRepository extends JpaRepository<PassengerBooki
 	    List<PassengerBooking> findByDriverId(@Param("driverId") Long driverId);
 
 	boolean existsByPassengerIdAndJourneyId(Long id, Long id1);
+
+	List<PassengerBooking> findByJourney_Driver_User_Id(Long userId);
 }

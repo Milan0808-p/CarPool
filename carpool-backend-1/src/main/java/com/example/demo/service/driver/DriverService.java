@@ -8,6 +8,7 @@ import com.example.demo.dto.driverDtos.JourneyUpdateDTO;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -61,6 +62,8 @@ public class DriverService {
 
             //  Check existing driver profile
             Driver existing = driverRepository.findByUserId(user.getId());
+            
+//                  .orElseThrow(() -> new ResourceAlreadyExistsException("Driver profile already exists"));
             
             if (user.getRole()==Role.USER){
     		    throw new AccessDeniedException("Only Driver can create profile");
@@ -156,11 +159,16 @@ public class DriverService {
     	    throw new InvalidCredentialsException("Past date not allowed");
     	}
     	
-        Driver driver = driverRepository.findById(driverId)
-                .orElseThrow(() -> new ResourceNotFoundException("Driver not found"));
-        
+    	Driver driver = driverRepository.findByUserId(driverId);
+//    	        .orElseThrow(() -> new ResourceNotFoundException("Driver not found"));
+    	if (driver == null) {
+		    throw new ResourceNotFoundException("Driver not found");
+		}
+//    	 User driver = authRepository.findById(driverId)
+//               .orElseThrow(() -> new ResourceNotFoundException("Driver not found"));
+    	 
         boolean alreadyExists = journeyRepository
-                .existsByDriverIdAndDateAndStartLocationAndEndLocation(
+                .existsByDriver_User_IdAndDateAndStartLocationAndEndLocation(
                 		driverId,
                         request.getDate(),
                         request.getStartLocation(),
@@ -222,7 +230,7 @@ public class DriverService {
 	    );
     }
 
-    public ResponseEntity<ApiResponse<JourneyResponseDTO>> updateJourney(JourneyUpdateDTO request,Long journyId, Long driverId) {
+    public ResponseEntity<ApiResponse<JourneyResponseDTO>> updateJourney(JourneyUpdateDTO request,Long journyId, Long userId) {
     	
     	if (request.getDate().isBefore( LocalDate.now())) {
     	    throw new InvalidCredentialsException("Past date not allowed");
@@ -231,12 +239,14 @@ public class DriverService {
         Journey journey = journeyRepository.findById(journyId)
                 .orElseThrow(() -> new ResourceNotFoundException("Journey not found"));
 
-        if (!journey.getDriver().getId().equals(driverId)) {
+        Driver driver = journey.getDriver();
+
+        if (driver == null ||
+            driver.getUser() == null ||
+            !Objects.equals(driver.getUser().getId(), userId)) {
+
             throw new AccessDeniedException("You are not authorized to update this journey");
         }
-        
-        Driver driver = driverRepository.findById(driverId)
-                .orElseThrow(() -> new ResourceNotFoundException("Driver not found"));
         
         journey.setStartLocation(request.getStartLocation());
         journey.setEndLocation(request.getEndLocation());
@@ -244,8 +254,6 @@ public class DriverService {
         journey.setPrice(request.getPrice());
         journey.setDate(request.getDate());
         journey.setDepartureTime(request.getDepartureTime());
-        journey.setDriver(driver);
-
 
         if (request.getStops() != null) {
             List<RouteStop> existingStops = journey.getStops();
@@ -296,12 +304,17 @@ public class DriverService {
 	    );
     }
 
-    public ResponseEntity<ApiResponse<Void>> deleteJourney(Long journeyId, Long driverId) {
+    public ResponseEntity<ApiResponse<Void>> deleteJourney(Long journeyId, Long userId) {
 
         Journey journey = journeyRepository.findById(journeyId)
                 .orElseThrow(() -> new ResourceNotFoundException("Journey not found"));
 
-        if (!journey.getDriver().getId().equals(driverId)) {
+        Driver driver = journey.getDriver();
+
+        if (driver == null ||
+            driver.getUser() == null ||
+            !Objects.equals(driver.getUser().getId(), userId)) {
+
             throw new AccessDeniedException("You are not authorized to delete this journey");
         }
 
@@ -312,9 +325,9 @@ public class DriverService {
         );
     }
 
-    public ResponseEntity<ApiResponse<List<DriverBookingListDTO>>> getBookings(Long driverId) {
+    public ResponseEntity<ApiResponse<List<DriverBookingListDTO>>> getBookings(Long userId) {
 
-        List<PassengerBooking> bookings = passengerBookingRepository.findByDriverId(driverId);
+        List<PassengerBooking> bookings = passengerBookingRepository.findByJourney_Driver_User_Id(userId);
 
         List<DriverBookingListDTO> response = bookings.stream()
                 .map(this::convertToDTO)
@@ -342,15 +355,20 @@ public class DriverService {
                 .build();
     }
 
-	public ResponseEntity<ApiResponse<DriverBookingListDTO>> updateBookingStatus(Long bookingId, Long driverId,
+	public ResponseEntity<ApiResponse<DriverBookingListDTO>> updateBookingStatus(Long bookingId, Long userId,
 			String status) {
 
 		PassengerBooking booking = passengerBookingRepository.findById(bookingId)
 				.orElseThrow(() -> new ResourceNotFoundException("Booking not found"));
 
-		if (!booking.getJourney().getDriver().getId().equals(driverId)) {
-			throw new AccessDeniedException("Unauthorized");
-		}
+		Driver driver = booking.getJourney().getDriver();
+		
+        if (driver == null ||
+            driver.getUser() == null ||
+            !Objects.equals(driver.getUser().getId(), userId)) {
+
+            throw new AccessDeniedException("You are not authorized to update this journey");
+        }
 
 		booking.setStatus(BookingStatus.valueOf(status.toUpperCase()));
 
