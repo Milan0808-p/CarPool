@@ -14,12 +14,14 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import com.example.demo.dto.ApiResponse;
+import com.example.demo.dto.driverDtos.DriverBookingListDTO;
 import com.example.demo.dto.driverDtos.DriverProfileDTO;
 import com.example.demo.entity.authEntity.Role;
 import com.example.demo.entity.authEntity.User;
 import com.example.demo.entity.driverEntity.Driver;
 import com.example.demo.entity.driverEntity.Journey;
 import com.example.demo.entity.driverEntity.RouteStop;
+import com.example.demo.entity.passengerEntity.BookingStatus;
 import com.example.demo.entity.passengerEntity.PassengerBooking;
 import com.example.demo.exception.AccessDeniedException;
 import com.example.demo.exception.BadRequestException;
@@ -310,14 +312,53 @@ public class DriverService {
         );
     }
 
-	public ResponseEntity<ApiResponse<List<PassengerBooking>>> getBookings(Long driverId) {
-		// TODO Auto-generated method stub
-		
-	    List<PassengerBooking> passengerBooking = passengerBookingRepository.findByDriverId(driverId);
-	    
-		System.out.print(passengerBooking);
-		return ResponseEntity.ok(new ApiResponse<>("success", "Ride find successful", passengerBooking));
-		
+    public ResponseEntity<ApiResponse<List<DriverBookingListDTO>>> getBookings(Long driverId) {
+
+        List<PassengerBooking> bookings = passengerBookingRepository.findByDriverId(driverId);
+
+        List<DriverBookingListDTO> response = bookings.stream()
+                .map(this::convertToDTO)
+                .toList();
+
+        return ResponseEntity.ok(
+                new ApiResponse<>("success", "Booking list fetched successfully", response)
+        );
+    }
+    
+    private DriverBookingListDTO convertToDTO(PassengerBooking b) {
+
+        return DriverBookingListDTO.builder()
+                .bookingId(b.getId())
+                .bookingTime(b.getBookingTime().toString())
+                .passengerName(b.getPassenger().getUsername())
+                .passengerPhone(b.getPassenger().getPhone())
+                .pickupPoint(b.getPickupPoint())
+                .dropPoint(b.getDropPoint())
+                .seatsBooked(b.getSeatsBooked())
+                .totalPrice(b.getTotalPrice())
+                .travelDate(b.getTravelDate().toString())
+                .status(b.getStatus().name())
+                .paymentStatus(b.getPaymentStatus().name())
+                .build();
+    }
+
+	public ResponseEntity<ApiResponse<DriverBookingListDTO>> updateBookingStatus(Long bookingId, Long driverId,
+			String status) {
+
+		PassengerBooking booking = passengerBookingRepository.findById(bookingId)
+				.orElseThrow(() -> new RuntimeException("Booking not found"));
+
+		if (!booking.getJourney().getDriver().getId().equals(driverId)) {
+			throw new RuntimeException("Unauthorized");
+		}
+
+		booking.setStatus(BookingStatus.valueOf(status.toUpperCase()));
+
+		passengerBookingRepository.save(booking);
+
+		DriverBookingListDTO dto = convertToDTO(booking);
+
+		return ResponseEntity.ok(new ApiResponse<>("success", "Booking status updated", dto));
 	}
 
 }
