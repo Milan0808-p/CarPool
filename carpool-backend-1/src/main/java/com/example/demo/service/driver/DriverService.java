@@ -345,10 +345,10 @@ public class DriverService {
 			String status) {
 
 		PassengerBooking booking = passengerBookingRepository.findById(bookingId)
-				.orElseThrow(() -> new RuntimeException("Booking not found"));
+				.orElseThrow(() -> new ResourceNotFoundException("Booking not found"));
 
 		if (!booking.getJourney().getDriver().getId().equals(driverId)) {
-			throw new RuntimeException("Unauthorized");
+			throw new AccessDeniedException("Unauthorized");
 		}
 
 		booking.setStatus(BookingStatus.valueOf(status.toUpperCase()));
