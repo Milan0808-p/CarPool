@@ -2,8 +2,11 @@ package com.example.demo.controller;
 
 import com.example.demo.dto.ApiResponse;
 import com.example.demo.dto.driverDtos.JourneyResponseDTO;
+import com.example.demo.dto.passengerRideDTO.PassengerBookingRequestDTO;
+import com.example.demo.dto.passengerRideDTO.PassengerBookingResponseDTO;
 import com.example.demo.dto.passengerRideDTO.PassengerRequestDTO;
-import com.example.demo.dto.passengerRideDTO.PassengerResponseDTO;
+import com.example.demo.entity.passengerEntity.PassengerBooking;
+import com.example.demo.exception.DuplicateBookingException;
 import com.example.demo.service.passenger.PassengerRideService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -21,13 +24,24 @@ public class PassengerRideController {
     PassengerRideService passengerRideService;
 
     @PostMapping("/search")
-    public ResponseEntity<ApiResponse<List<JourneyResponseDTO>>> bookRide(
+    public ResponseEntity<ApiResponse<List<JourneyResponseDTO>>> SearchRide(
             @RequestBody PassengerRequestDTO request) {
         System.out.println("In bookRIde Controller ");
-        List<JourneyResponseDTO> rides = passengerRideService.bookRide(request);
+        List<JourneyResponseDTO> rides = passengerRideService.searchRide(request);
         System.out.println("Rides: " + rides);
         return ResponseEntity.ok(
                 new ApiResponse<>("SUCCESS", "Matched rides found", rides)
+        );
+    }
+
+    @PostMapping("/book")
+    public ResponseEntity<ApiResponse<PassengerBookingResponseDTO>> bookRide(
+            @RequestBody PassengerBookingRequestDTO request) {
+        System.out.println("In book controller");
+       PassengerBookingResponseDTO rideBooked = passengerRideService.bookRide(request);
+
+        return ResponseEntity.ok(
+                new ApiResponse<>("SUCCESS", "Will notify you,when captain will accept", rideBooked)
         );
     }
 }

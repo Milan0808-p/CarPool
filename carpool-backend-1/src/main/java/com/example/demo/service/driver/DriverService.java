@@ -212,12 +212,13 @@ public class DriverService {
         		.availableSeats(journey.getAvailableSeats())
         		.driverName(journey.getDriver().getUser().getUsername())
         		.carName(journey.getDriver().getCarName())
+                .numberPlate(journey.getDriver().getCarNumber())
         		.stops(stopNames)
         		.date(journey.getDate())
         		.build();
 
         return ResponseEntity.ok(
-	            new ApiResponse<>("success", "Ride Creatation successful", response)
+	            new ApiResponse<>("success", "Ride Creation successful", response)
 	    );
     }
 

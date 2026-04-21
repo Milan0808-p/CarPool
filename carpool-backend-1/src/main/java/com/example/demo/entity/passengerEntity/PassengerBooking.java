@@ -11,7 +11,12 @@ import lombok.*;
 @Entity
 @Getter 
 @Setter
-@Table(name = "passenger_booking")
+@Table(
+        name = "passenger_booking",
+        uniqueConstraints = {
+                @UniqueConstraint(columnNames = {"user_id", "journey_id"})
+        }
+)
 public class PassengerBooking {
 
     @Id
@@ -31,9 +36,9 @@ public class PassengerBooking {
     private Journey journey;
 
     // Booking details
-    private int seatsBooked;
+    private Integer seatsBooked;
 
-    private double totalPrice;
+    private Double totalPrice;
 
     @Enumerated(EnumType.STRING)
     private BookingStatus status;
