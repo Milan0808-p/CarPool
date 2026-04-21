@@ -1,10 +1,17 @@
 package com.example.demo.service.passenger;
 
 import com.example.demo.dto.driverDtos.JourneyResponseDTO;
+import com.example.demo.dto.passengerRideDTO.PassengerBookingRequestDTO;
+import com.example.demo.dto.passengerRideDTO.PassengerBookingResponseDTO;
 import com.example.demo.dto.passengerRideDTO.PassengerRequestDTO;
-import com.example.demo.dto.passengerRideDTO.PassengerResponseDTO;
+import com.example.demo.entity.authEntity.User;
 import com.example.demo.entity.driverEntity.Journey;
+import com.example.demo.entity.passengerEntity.PassengerBooking;
+import com.example.demo.exception.*;
+import com.example.demo.repository.AuthRepository;
 import com.example.demo.repository.JourneyRepository;
+import com.example.demo.repository.PassengerBookingRepository;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.List;
@@ -17,8 +24,14 @@ public class PassengerRideService {
     @Autowired
     JourneyRepository journeyRepository;
 
+    @Autowired
+    private PassengerBookingRepository bookingRepository;
 
-    public List<JourneyResponseDTO> bookRide(PassengerRequestDTO request) {
+    @Autowired
+    private AuthRepository authRepository;
+
+
+    public List<JourneyResponseDTO> searchRide(PassengerRequestDTO request) {
 
         List<Journey> journeys = journeyRepository
                 .findByStartLocationAndEndLocation(
@@ -53,4 +66,75 @@ public class PassengerRideService {
                         .build()
         ).toList();
     }
-}
+    @Transactional
+    public PassengerBookingResponseDTO bookRide(PassengerBookingRequestDTO request) {
+
+        // 1. Fetch journey WITH LOCK
+        Journey journey = journeyRepository.findByIdForUpdate(request.getJourneyId())
+                .orElseThrow(() -> new ResourceNotFoundException("Journey not found"));
+
+        // 2. Fetch user
+        User user = authRepository.findById(request.getUserId())
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+
+        // 3. Prevent duplicate booking
+        boolean alreadyBooked = bookingRepository
+                .existsByPassengerIdAndJourneyId(user.getId(), journey.getId());
+
+        if (alreadyBooked) {
+            throw new DuplicateBookingException("You already booked this ride");
+        }
+
+        // 4. Validate seats (AFTER LOCK )
+        if (journey.getAvailableSeats() < request.getSeats()) {
+            throw new InsufficientSeatsException("Not enough seats available");
+        }
+
+        // 5. Update seats FIRST
+        journey.setAvailableSeats(
+                journey.getAvailableSeats() - request.getSeats()
+        );
+
+        // 6. Create booking
+        PassengerBooking booking = new PassengerBooking();
+        booking.setPassenger(user);
+        booking.setJourney(journey);
+        booking.setSeatsBooked(request.getSeats());
+        booking.setPickupPoint(request.getPickupPoint());
+        booking.setDropPoint(request.getDropPoint());
+        booking.setTravelDate(journey.getDate());
+
+        // 7. Price calculation
+        double totalPrice = journey.getPrice() * request.getSeats();
+        booking.setTotalPrice(totalPrice);
+
+        // 8. Save booking
+        bookingRepository.save(booking);
+
+        // (No need to explicitly save journey if managed by JPA)
+
+        // 9. Return response
+        return PassengerBookingResponseDTO.builder()
+                .bookingId(booking.getId())
+                .passengerName(user.getUsername())
+                .journeyId(journey.getId())
+                .startLocation(journey.getStartLocation())
+                .endLocation(journey.getEndLocation())
+                .travelDate(booking.getTravelDate())
+                .departureTime(journey.getDepartureTime())
+                .seatsBooked(booking.getSeatsBooked())
+                .totalPrice(booking.getTotalPrice())
+                .pickupPoint(booking.getPickupPoint())
+                .dropPoint(booking.getDropPoint())
+                .bookingStatus(booking.getStatus().name())
+                .paymentStatus(booking.getPaymentStatus().name())
+                .driverName(
+                        journey.getDriver() != null && journey.getDriver().getUser() != null
+                                ? journey.getDriver().getUser().getUsername()
+                                : null
+                )
+                .carName(journey.getDriver() != null ? journey.getDriver().getCarName() : null)
+                .numberPlate(journey.getDriver() != null ? journey.getDriver().getCarNumber() : null)
+                .bookingTime(booking.getBookingTime())
+                .build();
+    }}

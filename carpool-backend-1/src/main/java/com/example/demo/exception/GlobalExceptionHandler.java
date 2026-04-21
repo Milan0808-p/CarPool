@@ -1,5 +1,6 @@
 package com.example.demo.exception;
 
+import java.time.LocalDateTime;
 import java.util.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -15,6 +16,12 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(ResourceNotFoundException.class)
     public ResponseEntity<ApiResponse<Object>> handleNotFound(ResourceNotFoundException ex) {
         return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(new ApiResponse<>("error", ex.getMessage(), null));
+    }
+
+    @ExceptionHandler(InsufficientSeatsException.class)
+    public ResponseEntity<ApiResponse<Object>> handleNotFound(InsufficientSeatsException ex) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                 .body(new ApiResponse<>("error", ex.getMessage(), null));
     }
 
@@ -63,7 +70,15 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                 .body(new ApiResponse<>("error", ex.getMessage(), null));
     }
-    
+
+
+    @ExceptionHandler(DuplicateBookingException.class)
+    public ResponseEntity<ApiResponse> handleDuplicateBooking(DuplicateBookingException ex) {
+        return ResponseEntity
+                .status(HttpStatus.CONFLICT)
+                .body(new ApiResponse(null, ex.getMessage(), "error", LocalDateTime.now()));
+    }
+
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ApiResponse<Object>> handleValidationExceptions(
             MethodArgumentNotValidException ex) {
