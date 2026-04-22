@@ -10,10 +10,8 @@ import com.example.demo.exception.DuplicateBookingException;
 import com.example.demo.service.passenger.PassengerRideService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 @RestController
@@ -29,11 +27,11 @@ public class PassengerRideController {
         return passengerRideService.searchRide(request);
     }
 
-    @PostMapping("/book")
+    @PostMapping("/book/{journeyId}")
     public ResponseEntity<ApiResponse<PassengerBookingResponseDTO>> bookRide(
-            @RequestBody PassengerBookingRequestDTO request) {
-
-       return passengerRideService.bookRide(request);
+            @RequestBody PassengerBookingRequestDTO request, @PathVariable String journeyId, Authentication auth) {
+        long userId = (long) auth.getPrincipal();
+       return passengerRideService.bookRide(request,journeyId,userId);
 
     }
 }

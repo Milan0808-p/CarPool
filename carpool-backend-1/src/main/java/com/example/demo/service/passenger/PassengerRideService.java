@@ -91,14 +91,14 @@ public class PassengerRideService {
     }
 
     @Transactional
-    public ResponseEntity<ApiResponse<PassengerBookingResponseDTO>> bookRide(PassengerBookingRequestDTO request) {
+    public ResponseEntity<ApiResponse<PassengerBookingResponseDTO>> bookRide(PassengerBookingRequestDTO request,String journeyId,Long userId) {
 
         // 1. Fetch journey WITH LOCK
-        Journey journey = journeyRepository.findByPublicIdForUpdate(request.getJourneyId())
+        Journey journey = journeyRepository.findByPublicIdForUpdate(journeyId)
                 .orElseThrow(() -> new ResourceNotFoundException("Journey not found"));
 
         // 2. Fetch user
-        User user = authRepository.findById(request.getUserId())
+        User user = authRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
         // 3. Prevent duplicate booking
