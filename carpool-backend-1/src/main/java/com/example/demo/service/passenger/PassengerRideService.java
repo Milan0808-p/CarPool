@@ -1,5 +1,6 @@
 package com.example.demo.service.passenger;
 
+import com.example.demo.dto.ApiResponse;
 import com.example.demo.dto.driverDtos.JourneyResponseDTO;
 import com.example.demo.dto.passengerRideDTO.PassengerBookingRequestDTO;
 import com.example.demo.dto.passengerRideDTO.PassengerBookingResponseDTO;
@@ -7,16 +8,18 @@ import com.example.demo.dto.passengerRideDTO.PassengerRequestDTO;
 import com.example.demo.entity.authEntity.User;
 import com.example.demo.entity.driverEntity.Journey;
 import com.example.demo.entity.passengerEntity.PassengerBooking;
-import com.example.demo.exception.*;
+import com.example.demo.exception.DuplicateBookingException;
+import com.example.demo.exception.InsufficientSeatsException;
+import com.example.demo.exception.ResourceNotFoundException;
 import com.example.demo.repository.AuthRepository;
 import com.example.demo.repository.JourneyRepository;
 import com.example.demo.repository.PassengerBookingRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Service;
 
 import java.util.List;
-
-import org.springframework.stereotype.Service;
 
 @Service
 public class PassengerRideService {
@@ -31,7 +34,7 @@ public class PassengerRideService {
     private AuthRepository authRepository;
 
 
-    public List<JourneyResponseDTO> searchRide(PassengerRequestDTO request) {
+    public ResponseEntity<ApiResponse<List<JourneyResponseDTO>>> searchRide(PassengerRequestDTO request) {
 
         List<Journey> journeys = journeyRepository
                 .findByStartLocationAndEndLocation(
@@ -39,35 +42,56 @@ public class PassengerRideService {
                         request.getDestination()
                 );
 
-        return journeys.stream().map(j ->
-                JourneyResponseDTO.builder()
-                        .journeyId(j.getPublicId())
-                        .startLocation(j.getStartLocation())
-                        .endLocation(j.getEndLocation())
-                        .date(j.getDate())
-                        .departureTime(j.getDepartureTime())
-                        .availableSeats(j.getAvailableSeats())
-                        .price(j.getPrice())
-                        .numberPlate(j.getDriver().getCarNumber())
-                        .carName(j.getDriver().getCarName())
-                        .driverName(j.getDriver().getUser().getUsername())
+//<<<<<<< HEAD
+//        return journeys.stream().map(j ->
+//                JourneyResponseDTO.builder()
+//                        .journeyId(j.getPublicId())
+//                        .startLocation(j.getStartLocation())
+//                        .endLocation(j.getEndLocation())
+//                        .date(j.getDate())
+//                        .departureTime(j.getDepartureTime())
+//                        .availableSeats(j.getAvailableSeats())
+//                        .price(j.getPrice())
+//                        .numberPlate(j.getDriver().getCarNumber())
+//                        .carName(j.getDriver().getCarName())
+//                        .driverName(j.getDriver().getUser().getUsername())
+//=======
+        List<JourneyResponseDTO> rides = journeys.stream().map(j ->
+                        JourneyResponseDTO.builder()
+                                .journeyId(j.getPublicId())
+                                .startLocation(j.getStartLocation())
+                                .endLocation(j.getEndLocation())
+                                .date(j.getDate())
+                                .departureTime(j.getDepartureTime())
+                                .availableSeats(j.getAvailableSeats())
+                                .price(j.getPrice())
+                                .numberPlate(j.getDriver().getCarNumber())
+                                .carName(j.getDriver().getCarName())
+                                .driverName(j.getDriver().getUser().getUsername())
+//>>>>>>> eb53a97da11d13916d5f5eb42cd02f33cebccd93
 
-                        .stops(
-                                j.getStops() != null
-                                        ? j.getStops().stream()
-                                        .map(s -> s.getCityName())
-                                        .toList()
-                                        : null
-                        )
+                                .stops(
+                                        j.getStops() != null
+                                                ? j.getStops().stream()
+                                                .map(s -> s.getCityName())
+                                                .toList()
+                                                : null
+                                )
 
 //                        .numberPlate(
 //                                j.getDriver() != null ? j.getDriver().getCarNumber() : null
 //                        )
-                        .build()
+                                .build()
         ).toList();
+
+        return ResponseEntity.ok(
+                new ApiResponse<>("SUCCESS", "Matched rides found", rides)
+        );
+
     }
+
     @Transactional
-    public PassengerBookingResponseDTO bookRide(PassengerBookingRequestDTO request) {
+    public ResponseEntity<ApiResponse<PassengerBookingResponseDTO>> bookRide(PassengerBookingRequestDTO request) {
 
         // 1. Fetch journey WITH LOCK
         Journey journey = journeyRepository.findByPublicIdForUpdate(request.getJourneyId())
@@ -114,8 +138,13 @@ public class PassengerRideService {
         // (No need to explicitly save journey if managed by JPA)
 
         // 9. Return response
-        return PassengerBookingResponseDTO.builder()
+//<<<<<<< HEAD
+//        return PassengerBookingResponseDTO.builder()
+//                .bookingId(booking.getPublicId())
+//=======
+        PassengerBookingResponseDTO rideBooked = PassengerBookingResponseDTO.builder()
                 .bookingId(booking.getPublicId())
+//>>>>>>> eb53a97da11d13916d5f5eb42cd02f33cebccd93
                 .passengerName(user.getUsername())
                 .journeyId(journey.getId())
                 .startLocation(journey.getStartLocation())
@@ -137,4 +166,12 @@ public class PassengerRideService {
                 .numberPlate(journey.getDriver() != null ? journey.getDriver().getCarNumber() : null)
                 .bookingTime(booking.getBookingTime())
                 .build();
-    }}
+
+
+        return ResponseEntity.ok(
+                new ApiResponse<>("SUCCESS", "Will notify you,when captain will accept", rideBooked)
+        );
+    }
+
+
+}

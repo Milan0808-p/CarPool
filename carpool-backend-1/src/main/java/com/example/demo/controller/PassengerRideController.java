@@ -26,22 +26,14 @@ public class PassengerRideController {
     @PostMapping("/search")
     public ResponseEntity<ApiResponse<List<JourneyResponseDTO>>> SearchRide(
             @RequestBody PassengerRequestDTO request) {
-        System.out.println("In bookRIde Controller ");
-        List<JourneyResponseDTO> rides = passengerRideService.searchRide(request);
-        System.out.println("Rides: " + rides);
-        return ResponseEntity.ok(
-                new ApiResponse<>("SUCCESS", "Matched rides found", rides)
-        );
+        return passengerRideService.searchRide(request);
     }
 
     @PostMapping("/book")
     public ResponseEntity<ApiResponse<PassengerBookingResponseDTO>> bookRide(
             @RequestBody PassengerBookingRequestDTO request) {
-        System.out.println("In book controller");
-       PassengerBookingResponseDTO rideBooked = passengerRideService.bookRide(request);
 
-        return ResponseEntity.ok(
-                new ApiResponse<>("SUCCESS", "Will notify you,when captain will accept", rideBooked)
-        );
+       return passengerRideService.bookRide(request);
+
     }
 }
