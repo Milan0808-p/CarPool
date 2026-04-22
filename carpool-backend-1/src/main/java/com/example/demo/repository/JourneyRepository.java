@@ -21,7 +21,7 @@ public interface JourneyRepository extends JpaRepository<Journey, Long> {
     """)
     List<Journey> findAllWithDetails();
 
-	boolean existsByDriverIdAndDateAndStartLocationAndEndLocation(Long driverId, LocalDate date, String startLocation,
+	boolean existsByDriver_User_IdAndDateAndStartLocationAndEndLocation(Long driverId, LocalDate date, String startLocation,
 			String endLocation);
     List<Journey> findByStartLocationAndEndLocation(String startLocation, String endLocation);
 

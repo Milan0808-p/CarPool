@@ -5,6 +5,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -42,14 +43,16 @@ public class DriverController {
 	
 	@PostMapping("/profile")
 	public ResponseEntity<ApiResponse<DriverProfileResponseDTO>> createDriverProfile(
-			@Valid @ModelAttribute DriverProfileDTO dto, @RequestHeader Long userId) {
-
+			@Valid @ModelAttribute DriverProfileDTO dto, Authentication auth) {
+		
+		Long userId = (Long) auth.getPrincipal();
 		return driverService.createProfile(dto, userId);
 
 	}
 
 	@PostMapping("/create")
-	public ResponseEntity<ApiResponse<JourneyResponseDTO>> createJourney(@Valid @RequestBody JourneyRequestDTO request,@RequestHeader Long driverId) {
+	public ResponseEntity<ApiResponse<JourneyResponseDTO>> createJourney(@Valid @RequestBody JourneyRequestDTO request,Authentication auth) {
+		Long driverId = (Long) auth.getPrincipal();
 		return driverService.createJourney(request,driverId);
 	}
 
@@ -57,29 +60,31 @@ public class DriverController {
 	public ResponseEntity<ApiResponse<JourneyResponseDTO>> updateJourney(
 			@Valid @RequestBody JourneyUpdateDTO request,
 			@PathVariable Long journeyId,
-			@RequestHeader(value = "driverId", required = false) Long driverId) {
+			Authentication auth) {
 		
-		return driverService.updateJourney(request, journeyId, driverId);
+		Long userId = (Long) auth.getPrincipal();
+		return driverService.updateJourney(request, journeyId, userId);
 		
 	}
 	
 	@DeleteMapping("/delete/{journeyId}")
-	public ResponseEntity<ApiResponse<Void>> deleteJourney(@PathVariable Long journeyId, @RequestHeader(value = "driverId", required = false) Long driverId){
-		return driverService.deleteJourney(journeyId,driverId);
+	public ResponseEntity<ApiResponse<Void>> deleteJourney(@PathVariable Long journeyId, Authentication auth){
+		Long userId = (Long) auth.getPrincipal();
+		return driverService.deleteJourney(journeyId,userId);
 	}
 	
 	@GetMapping("/bookings")
-	public ResponseEntity<ApiResponse<List<DriverBookingListDTO>>> getBookings( @RequestHeader(value = "driverId", required = false) Long driverId){
-		
-		return driverService.getBookings(driverId);
+	public ResponseEntity<ApiResponse<List<DriverBookingListDTO>>> getBookings( Authentication auth){
+		Long userId = (Long) auth.getPrincipal();
+		return driverService.getBookings(userId);
 	}
 	
 	@PutMapping("/bookings/{bookingId}/status")
 	public ResponseEntity<ApiResponse<DriverBookingListDTO>> updateBookingStatus(
 	        @PathVariable Long bookingId,
 	        @RequestParam String status,
-	        @RequestHeader Long driverId) {
-
-	    return driverService.updateBookingStatus(bookingId, driverId, status);
+	        Authentication auth) {
+		Long userId = (Long) auth.getPrincipal();
+	    return driverService.updateBookingStatus(bookingId, userId, status);
 	}
 }
