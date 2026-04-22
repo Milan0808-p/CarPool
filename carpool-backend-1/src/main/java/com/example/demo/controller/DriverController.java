@@ -59,7 +59,7 @@ public class DriverController {
 	@PutMapping("/update/{journeyId}")
 	public ResponseEntity<ApiResponse<JourneyResponseDTO>> updateJourney(
 			@Valid @RequestBody JourneyUpdateDTO request,
-			@PathVariable Long journeyId,
+			@PathVariable String journeyId,
 			Authentication auth) {
 		
 		Long userId = (Long) auth.getPrincipal();
@@ -68,7 +68,7 @@ public class DriverController {
 	}
 	
 	@DeleteMapping("/delete/{journeyId}")
-	public ResponseEntity<ApiResponse<Void>> deleteJourney(@PathVariable Long journeyId, Authentication auth){
+	public ResponseEntity<ApiResponse<Void>> deleteJourney(@PathVariable String journeyId, Authentication auth){
 		Long userId = (Long) auth.getPrincipal();
 		return driverService.deleteJourney(journeyId,userId);
 	}
@@ -81,7 +81,7 @@ public class DriverController {
 	
 	@PutMapping("/bookings/{bookingId}/status")
 	public ResponseEntity<ApiResponse<DriverBookingListDTO>> updateBookingStatus(
-	        @PathVariable Long bookingId,
+	        @PathVariable String bookingId,
 	        @RequestParam String status,
 	        Authentication auth) {
 		Long userId = (Long) auth.getPrincipal();

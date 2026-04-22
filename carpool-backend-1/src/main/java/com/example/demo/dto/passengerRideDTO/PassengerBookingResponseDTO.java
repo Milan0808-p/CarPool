@@ -17,7 +17,7 @@ import java.time.LocalTime;
 @Transactional
 public class PassengerBookingResponseDTO {
 
-    private Long bookingId;
+    private String bookingId;
 
     // Passenger
     private String passengerName;

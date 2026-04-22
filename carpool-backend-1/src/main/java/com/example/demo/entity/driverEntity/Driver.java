@@ -13,6 +13,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.util.List;
+import java.util.UUID;
 
 @Entity
 @NoArgsConstructor
@@ -26,6 +27,9 @@ public class Driver {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(name = "public_id", unique = true, nullable = false, updatable = false)
+    protected String publicId;
+    
     @OneToOne
     @JoinColumn(name = "user_id", nullable = false, unique = true)
     @NotNull(message = "User is required")
@@ -50,4 +54,9 @@ public class Driver {
     @OneToMany(mappedBy = "driver", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonIgnore
     private List<Journey> journeys;
+    
+    @PrePersist
+    protected void onCreate() {
+        this.publicId = UUID.randomUUID().toString();
+    }
 }

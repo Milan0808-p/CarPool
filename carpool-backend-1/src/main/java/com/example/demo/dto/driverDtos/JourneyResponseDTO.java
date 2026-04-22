@@ -15,7 +15,7 @@ import java.util.List;
 //@NoArgsConstructor
 public class JourneyResponseDTO {
 
-    private Long journeyId;
+    private String journeyId;
     private String startLocation;
     private String endLocation;
 

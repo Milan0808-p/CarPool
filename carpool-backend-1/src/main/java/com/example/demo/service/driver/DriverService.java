@@ -136,7 +136,7 @@ public class DriverService {
             System.out.println("Time taken: " + (end - start));
 
             DriverProfileResponseDTO response = DriverProfileResponseDTO.builder()
-                    .userId(user.getId())
+                    .userId(user.getPublicId())
                     .carName(driver.getCarName())
                     .carNumber(driver.getCarNumber())
                     .licenseNumber(driver.getLicenseNumber())
@@ -212,7 +212,7 @@ public class DriverService {
                 .toList();
         
         JourneyResponseDTO response= JourneyResponseDTO.builder()
-        		.journeyId(journey.getId())
+        		.journeyId(journey.getPublicId())
         		.startLocation(journey.getStartLocation())
         		.endLocation(journey.getEndLocation())
         		.departureTime(journey.getDepartureTime())
@@ -230,13 +230,13 @@ public class DriverService {
 	    );
     }
 
-    public ResponseEntity<ApiResponse<JourneyResponseDTO>> updateJourney(JourneyUpdateDTO request,Long journyId, Long userId) {
+    public ResponseEntity<ApiResponse<JourneyResponseDTO>> updateJourney(JourneyUpdateDTO request,String journyId, Long userId) {
     	
     	if (request.getDate().isBefore( LocalDate.now())) {
     	    throw new InvalidCredentialsException("Past date not allowed");
     	}
     	
-        Journey journey = journeyRepository.findById(journyId)
+        Journey journey = journeyRepository.findByPublicId(journyId)
                 .orElseThrow(() -> new ResourceNotFoundException("Journey not found"));
 
         Driver driver = journey.getDriver();
@@ -244,7 +244,6 @@ public class DriverService {
         if (driver == null ||
             driver.getUser() == null ||
             !Objects.equals(driver.getUser().getId(), userId)) {
-
             throw new AccessDeniedException("You are not authorized to update this journey");
         }
         
@@ -287,7 +286,7 @@ public class DriverService {
                 .toList();
         
         JourneyResponseDTO response= JourneyResponseDTO.builder()
-        		.journeyId(journey.getId())
+        		.journeyId(journey.getPublicId())
         		.startLocation(journey.getStartLocation())
         		.endLocation(journey.getEndLocation())
         		.departureTime(journey.getDepartureTime())
@@ -304,9 +303,9 @@ public class DriverService {
 	    );
     }
 
-    public ResponseEntity<ApiResponse<Void>> deleteJourney(Long journeyId, Long userId) {
+    public ResponseEntity<ApiResponse<Void>> deleteJourney(String journeyId, Long userId) {
 
-        Journey journey = journeyRepository.findById(journeyId)
+        Journey journey = journeyRepository.findByPublicId(journeyId)
                 .orElseThrow(() -> new ResourceNotFoundException("Journey not found"));
 
         Driver driver = journey.getDriver();
@@ -341,7 +340,7 @@ public class DriverService {
     private DriverBookingListDTO convertToDTO(PassengerBooking b) {
 
         return DriverBookingListDTO.builder()
-                .bookingId(b.getId())
+                .bookingId(b.getPublicId())
                 .bookingTime(b.getBookingTime().toString())
                 .passengerName(b.getPassenger().getUsername())
                 .passengerPhone(b.getPassenger().getPhone())
@@ -355,10 +354,10 @@ public class DriverService {
                 .build();
     }
 
-	public ResponseEntity<ApiResponse<DriverBookingListDTO>> updateBookingStatus(Long bookingId, Long userId,
+	public ResponseEntity<ApiResponse<DriverBookingListDTO>> updateBookingStatus(String bookingId, Long userId,
 			String status) {
 
-		PassengerBooking booking = passengerBookingRepository.findById(bookingId)
+		PassengerBooking booking = passengerBookingRepository.findByPublicId(bookingId)
 				.orElseThrow(() -> new ResourceNotFoundException("Booking not found"));
 
 		Driver driver = booking.getJourney().getDriver();

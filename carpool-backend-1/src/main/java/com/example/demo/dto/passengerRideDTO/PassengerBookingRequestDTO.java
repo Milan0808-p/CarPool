@@ -4,7 +4,7 @@ import lombok.Data;
 
 @Data
 public class PassengerBookingRequestDTO {
-    private Long journeyId;
+    private String journeyId;
     private Long userId;
     private int seats;
     private String pickupPoint;

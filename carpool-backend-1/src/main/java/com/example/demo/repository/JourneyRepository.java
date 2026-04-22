@@ -4,7 +4,9 @@ import jakarta.persistence.LockModeType;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
+import com.example.demo.entity.authEntity.User;
 import com.example.demo.entity.driverEntity.Journey;
 
 import java.time.LocalDate;
@@ -27,8 +29,14 @@ public interface JourneyRepository extends JpaRepository<Journey, Long> {
 
 
 
+//    @Lock(LockModeType.PESSIMISTIC_WRITE)
+//    @Query("SELECT j FROM Journey j WHERE j.id = :id")
+//    Optional<Journey> findByIdForUpdate(Long id);
+
+    Optional<Journey> findByPublicId(String publicId);
+
     @Lock(LockModeType.PESSIMISTIC_WRITE)
-    @Query("SELECT j FROM Journey j WHERE j.id = :id")
-    Optional<Journey> findByIdForUpdate(Long id);
+    @Query("SELECT j FROM Journey j WHERE j.publicId = :publicId")
+    Optional<Journey> findByPublicIdForUpdate(@Param("publicId") String publicId);
 
 }

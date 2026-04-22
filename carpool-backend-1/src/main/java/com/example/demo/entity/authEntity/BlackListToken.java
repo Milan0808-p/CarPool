@@ -24,8 +24,6 @@ public class BlackListToken {
 
     private Date expiryDate;
 
-
-
     public BlackListToken(String token, Date expiryDate) {
         this.token = token;
         this.expiryDate = expiryDate;

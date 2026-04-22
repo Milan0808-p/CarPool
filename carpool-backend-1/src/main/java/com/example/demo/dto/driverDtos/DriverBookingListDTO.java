@@ -17,7 +17,7 @@ import lombok.Setter;
 @Builder
 public class DriverBookingListDTO {
 
-    private Long bookingId;
+    private String bookingId;
     private String bookingTime;
 
     private String passengerName;

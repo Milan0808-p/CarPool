@@ -1,5 +1,6 @@
 package com.example.demo.repository;
 
+import com.example.demo.entity.authEntity.User;
 import com.example.demo.entity.driverEntity.Journey;
 import jakarta.persistence.LockModeType;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -23,4 +24,6 @@ public interface PassengerBookingRepository extends JpaRepository<PassengerBooki
 	boolean existsByPassengerIdAndJourneyId(Long id, Long id1);
 
 	List<PassengerBooking> findByJourney_Driver_User_Id(Long userId);
+
+	Optional<PassengerBooking> findByPublicId(String bookingId);
 }

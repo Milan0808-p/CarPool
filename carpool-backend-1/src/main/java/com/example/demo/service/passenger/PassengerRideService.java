@@ -41,7 +41,7 @@ public class PassengerRideService {
 
         return journeys.stream().map(j ->
                 JourneyResponseDTO.builder()
-                        .journeyId(j.getId())
+                        .journeyId(j.getPublicId())
                         .startLocation(j.getStartLocation())
                         .endLocation(j.getEndLocation())
                         .date(j.getDate())
@@ -70,7 +70,7 @@ public class PassengerRideService {
     public PassengerBookingResponseDTO bookRide(PassengerBookingRequestDTO request) {
 
         // 1. Fetch journey WITH LOCK
-        Journey journey = journeyRepository.findByIdForUpdate(request.getJourneyId())
+        Journey journey = journeyRepository.findByPublicIdForUpdate(request.getJourneyId())
                 .orElseThrow(() -> new ResourceNotFoundException("Journey not found"));
 
         // 2. Fetch user
@@ -115,7 +115,7 @@ public class PassengerRideService {
 
         // 9. Return response
         return PassengerBookingResponseDTO.builder()
-                .bookingId(booking.getId())
+                .bookingId(booking.getPublicId())
                 .passengerName(user.getUsername())
                 .journeyId(journey.getId())
                 .startLocation(journey.getStartLocation())

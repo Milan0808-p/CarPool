@@ -5,8 +5,6 @@ import java.util.Date;
 import jakarta.persistence.*;
 import lombok.*;
 
-
-
 @Entity
 @Getter
 @Setter
@@ -16,15 +14,15 @@ import lombok.*;
 @Builder
 @Table(name = "refresh_tokens")
 public class RefreshToken {
-	
+
 	@Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	private Long id;
 
-     String token;
+	String token;
 
-     Date expiryDate;
+	Date expiryDate;
 
-    @ManyToOne
-    private User user;
+	@ManyToOne
+	private User user;
 }

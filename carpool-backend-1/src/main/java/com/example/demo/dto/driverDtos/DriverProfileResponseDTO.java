@@ -11,7 +11,7 @@ import lombok.NoArgsConstructor;
 @Builder
 public class DriverProfileResponseDTO {
 
-    private Long userId;
+    private String userId;
     private String carName;
     private String carNumber;
     private String licenseNumber;
