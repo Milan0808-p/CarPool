@@ -44,7 +44,6 @@ public class DriverController {
 	@PostMapping("/profile")
 	public ResponseEntity<ApiResponse<DriverProfileResponseDTO>> createDriverProfile(
 			@Valid @ModelAttribute DriverProfileDTO dto, @RequestHeader Long userId) {
-
 		return driverService.createProfile(dto, userId);
 
 	}
