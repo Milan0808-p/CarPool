@@ -1,5 +1,6 @@
 package com.example.demo.controller;
 
+import org.springframework.http.MediaType;
 import java.util.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -41,7 +42,7 @@ public class DriverController {
 	private final PassengerJourneyService service;
 
 	
-	@PostMapping("/profile")
+	@PostMapping(value="/profile", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
 	public ResponseEntity<ApiResponse<DriverProfileResponseDTO>> createDriverProfile(
 			@Valid @ModelAttribute DriverProfileDTO dto, Authentication auth) {
 		

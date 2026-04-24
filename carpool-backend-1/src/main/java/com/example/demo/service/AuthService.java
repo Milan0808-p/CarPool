@@ -107,11 +107,6 @@ public class AuthService {
 
 		// delete old refresh token (or use device-based later)
 		refreshTokenRepo.deleteByUserId(user.getId());
-
-//		RefreshToken rt = new RefreshToken();
-//		rt.setToken(refreshToken);
-//		rt.setUser(user);
-//		rt.setExpiryDate(new Date(System.currentTimeMillis() + 7L * 24 * 60 * 60 * 1000));
 		
 		RefreshToken rt = RefreshToken.builder()
 				.token(refreshToken)
