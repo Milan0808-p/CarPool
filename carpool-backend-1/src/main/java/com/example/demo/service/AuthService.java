@@ -76,7 +76,7 @@ public class AuthService {
 		if (user.getRole() == null) {
 			user.setRole(Role.USER);
 		}
-
+		System.out.println("In auth service before save " + user);
 		repo.save(user);
 
 		UserResponseDTO data = UserResponseDTO.builder()
@@ -85,7 +85,8 @@ public class AuthService {
 				.phone(user.getPhone())
 				.email(user.getEmail())
 				.build();
-	
+
+		System.out.println("In auth service before save " + data);
 		return ResponseEntity.ok(
 	            new ApiResponse<>("success", "Register successful", data)
 	    );
