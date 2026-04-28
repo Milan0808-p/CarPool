@@ -18,13 +18,13 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
-
+@CrossOrigin(origins = "http://localhost:4200")
 @RequestMapping("/api/auth")
 @RestController
 @RequiredArgsConstructor
 @CrossOrigin("*")
 public class AuthController {
-	
+
 	@Autowired
 	AuthService authService;
 	
