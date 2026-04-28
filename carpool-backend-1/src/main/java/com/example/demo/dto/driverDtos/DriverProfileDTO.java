@@ -19,7 +19,7 @@ public class DriverProfileDTO {
 
     @NotBlank(message = "Car name is required")
     private String carName;
-
+    
     @NotBlank(message = "Car number is required")
     private String carNumber;
 

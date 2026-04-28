@@ -4,6 +4,7 @@ import com.example.demo.dto.driverDtos.DriverProfileResponseDTO;
 import com.example.demo.dto.driverDtos.JourneyRequestDTO;
 import com.example.demo.dto.driverDtos.JourneyResponseDTO;
 import com.example.demo.dto.driverDtos.JourneyUpdateDTO;
+import com.example.demo.dto.kafka.BookingEvent;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -29,6 +30,7 @@ import com.example.demo.exception.BadRequestException;
 import com.example.demo.exception.InvalidCredentialsException;
 import com.example.demo.exception.ResourceAlreadyExistsException;
 import com.example.demo.exception.ResourceNotFoundException;
+import com.example.demo.kafka.KafkaProducerService;
 import com.example.demo.repository.AuthRepository;
 import com.example.demo.repository.DriverRepository;
 import com.example.demo.repository.JourneyRepository;
@@ -37,6 +39,8 @@ import com.example.demo.service.CloudinaryService;
 
 @Service
 public class DriverService {
+
+    private final KafkaProducerService kafkaProducerService;
 
 	@Autowired
     private CloudinaryService cloudinaryService;
@@ -52,6 +56,10 @@ public class DriverService {
     
     @Autowired
     private PassengerBookingRepository passengerBookingRepository;
+
+    DriverService(KafkaProducerService kafkaProducerService) {
+        this.kafkaProducerService = kafkaProducerService;
+    }
     
     public ResponseEntity<ApiResponse<DriverProfileResponseDTO>> createProfile(DriverProfileDTO dto, Long userId) {
 
@@ -373,6 +381,18 @@ public class DriverService {
 
 		passengerBookingRepository.save(booking);
 
+		BookingEvent event = new BookingEvent();
+		event.setBookingId(booking.getPublicId());
+		event.setUserId(booking.getPassenger().getPublicId());
+		event.setDriverId(driver.getUser().getPublicId());
+		event.setStatus(status.toUpperCase());
+		event.setDriverEmail(driver.getUser().getEmail());
+		event.setPassengerEmail(booking.getPassenger().getEmail());
+        event.setPickupPoint(booking.getPickupPoint());
+        event.setDropPoint(booking.getPickupPoint());
+
+		kafkaProducerService.send("booking-topic", event);
+		
 		DriverBookingListDTO dto = convertToDTO(booking);
 
 		return ResponseEntity.ok(new ApiResponse<>("success", "Booking status updated", dto));

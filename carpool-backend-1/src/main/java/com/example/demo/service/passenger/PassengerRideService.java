@@ -2,6 +2,7 @@ package com.example.demo.service.passenger;
 
 import com.example.demo.dto.ApiResponse;
 import com.example.demo.dto.driverDtos.JourneyResponseDTO;
+import com.example.demo.dto.kafka.BookingEvent;
 import com.example.demo.dto.passengerRideDTO.PassengerBookingRequestDTO;
 import com.example.demo.dto.passengerRideDTO.PassengerBookingResponseDTO;
 import com.example.demo.dto.passengerRideDTO.PassengerRequestDTO;
@@ -11,6 +12,7 @@ import com.example.demo.entity.passengerEntity.PassengerBooking;
 import com.example.demo.exception.DuplicateBookingException;
 import com.example.demo.exception.InsufficientSeatsException;
 import com.example.demo.exception.ResourceNotFoundException;
+import com.example.demo.kafka.KafkaProducerService;
 import com.example.demo.repository.AuthRepository;
 import com.example.demo.repository.JourneyRepository;
 import com.example.demo.repository.PassengerBookingRepository;
@@ -33,6 +35,8 @@ public class PassengerRideService {
     @Autowired
     private AuthRepository authRepository;
 
+    @Autowired
+    private KafkaProducerService kafkaProducer;
 
     public ResponseEntity<ApiResponse<List<JourneyResponseDTO>>> searchRide(PassengerRequestDTO request) {
 
@@ -42,20 +46,6 @@ public class PassengerRideService {
                         request.getDestination()
                 );
 
-//<<<<<<< HEAD
-//        return journeys.stream().map(j ->
-//                JourneyResponseDTO.builder()
-//                        .journeyId(j.getPublicId())
-//                        .startLocation(j.getStartLocation())
-//                        .endLocation(j.getEndLocation())
-//                        .date(j.getDate())
-//                        .departureTime(j.getDepartureTime())
-//                        .availableSeats(j.getAvailableSeats())
-//                        .price(j.getPrice())
-//                        .numberPlate(j.getDriver().getCarNumber())
-//                        .carName(j.getDriver().getCarName())
-//                        .driverName(j.getDriver().getUser().getUsername())
-//=======
         List<JourneyResponseDTO> rides = journeys.stream().map(j ->
                         JourneyResponseDTO.builder()
                                 .journeyId(j.getPublicId())
@@ -68,8 +58,6 @@ public class PassengerRideService {
                                 .numberPlate(j.getDriver().getCarNumber())
                                 .carName(j.getDriver().getCarName())
                                 .driverName(j.getDriver().getUser().getUsername())
-//>>>>>>> eb53a97da11d13916d5f5eb42cd02f33cebccd93
-
                                 .stops(
                                         j.getStops() != null
                                                 ? j.getStops().stream()
@@ -134,17 +122,27 @@ public class PassengerRideService {
 
         // 8. Save booking
         bookingRepository.save(booking);
+        
+        BookingEvent event = new BookingEvent();
+        event.setBookingId(booking.getPublicId());
+        event.setUserId(user.getPublicId());
+        event.setDriverId(
+            journey.getDriver() != null 
+            ? journey.getDriver().getUser().getPublicId() 
+            : null
+        );
+        event.setStatus(booking.getStatus().name());
+        event.setDriverEmail(booking.getJourney().getDriver().getUser().getEmail());
+        event.setPassengerEmail(booking.getPassenger().getEmail());
+        event.setPickupPoint(booking.getPickupPoint());
+        event.setDropPoint(booking.getPickupPoint());
 
-        // (No need to explicitly save journey if managed by JPA)
-
+        // send to Kafka
+        kafkaProducer.send("booking-topic", event);
+        
         // 9. Return response
-//<<<<<<< HEAD
-//        return PassengerBookingResponseDTO.builder()
-//                .bookingId(booking.getPublicId())
-//=======
         PassengerBookingResponseDTO rideBooked = PassengerBookingResponseDTO.builder()
                 .bookingId(booking.getPublicId())
-//>>>>>>> eb53a97da11d13916d5f5eb42cd02f33cebccd93
                 .passengerName(user.getUsername())
                 .journeyId(journey.getId())
                 .startLocation(journey.getStartLocation())
