@@ -30,6 +30,7 @@ import com.example.demo.service.passenger.PassengerJourneyService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
+@CrossOrigin(origins = "http://localhost:4200")
 @RequestMapping("/api/driver")
 @RestController
 @RequiredArgsConstructor
