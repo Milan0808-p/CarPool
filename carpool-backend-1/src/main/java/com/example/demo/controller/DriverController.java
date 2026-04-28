@@ -1,10 +1,11 @@
 package com.example.demo.controller;
 
-import java.util.List;
-
+import java.util.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.*;
+
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -15,13 +16,14 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.demo.dto.ApiResponse;
+import com.example.demo.dto.driverDtos.DriverBookingListDTO;
 import com.example.demo.dto.driverDtos.DriverProfileDTO;
 import com.example.demo.dto.driverDtos.DriverProfileResponseDTO;
 import com.example.demo.dto.driverDtos.JourneyRequestDTO;
 import com.example.demo.dto.driverDtos.JourneyResponseDTO;
 import com.example.demo.dto.driverDtos.JourneyUpdateDTO;
+import com.example.demo.entity.passengerEntity.PassengerBooking;
 import com.example.demo.service.driver.DriverService;
-import com.example.demo.service.driver.JourneyService;
 import com.example.demo.service.passenger.PassengerJourneyService;
 
 import jakarta.validation.Valid;
@@ -32,32 +34,57 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class DriverController {
 
-	@Autowired
+//	@Autowired
 	private final DriverService driverService;
-	
-	@Autowired
-	private final JourneyService journeyService;
 
-	@Autowired
-    private final PassengerJourneyService service;
-    
+//	@Autowired
+	private final PassengerJourneyService service;
+
+	
 	@PostMapping("/profile")
 	public ResponseEntity<ApiResponse<DriverProfileResponseDTO>> createDriverProfile(
-			@Valid @ModelAttribute DriverProfileDTO dto, @RequestHeader Long userId) {
+			@Valid @ModelAttribute DriverProfileDTO dto, Authentication auth) {
+		
+		Long userId = (Long) auth.getPrincipal();
 		return driverService.createProfile(dto, userId);
 
 	}
 
 	@PostMapping("/create")
-	public ResponseEntity<ApiResponse<JourneyResponseDTO>> createJourney(@RequestBody JourneyRequestDTO request) {
-		return journeyService.createJourney(request);
+	public ResponseEntity<ApiResponse<JourneyResponseDTO>> createJourney(@Valid @RequestBody JourneyRequestDTO request,Authentication auth) {
+		Long driverId = (Long) auth.getPrincipal();
+		return driverService.createJourney(request,driverId);
 	}
 
 	@PutMapping("/update/{journeyId}")
-	public ResponseEntity<ApiResponse<JourneyResponseDTO>> updateJourney(@RequestBody JourneyUpdateDTO request,
-			@PathVariable Long journeyId) {
-
-		return journeyService.updateJourney(request, journeyId);
+	public ResponseEntity<ApiResponse<JourneyResponseDTO>> updateJourney(
+			@Valid @RequestBody JourneyUpdateDTO request,
+			@PathVariable String journeyId,
+			Authentication auth) {
+		
+		Long userId = (Long) auth.getPrincipal();
+		return driverService.updateJourney(request, journeyId, userId);
+		
 	}
 	
+	@DeleteMapping("/delete/{journeyId}")
+	public ResponseEntity<ApiResponse<Void>> deleteJourney(@PathVariable String journeyId, Authentication auth){
+		Long userId = (Long) auth.getPrincipal();
+		return driverService.deleteJourney(journeyId,userId);
+	}
+	
+	@GetMapping("/bookings")
+	public ResponseEntity<ApiResponse<List<DriverBookingListDTO>>> getBookings( Authentication auth){
+		Long userId = (Long) auth.getPrincipal();
+		return driverService.getBookings(userId);
+	}
+	
+	@PutMapping("/bookings/{bookingId}/status")
+	public ResponseEntity<ApiResponse<DriverBookingListDTO>> updateBookingStatus(
+	        @PathVariable String bookingId,
+	        @RequestParam String status,
+	        Authentication auth) {
+		Long userId = (Long) auth.getPrincipal();
+	    return driverService.updateBookingStatus(bookingId, userId, status);
+	}
 }

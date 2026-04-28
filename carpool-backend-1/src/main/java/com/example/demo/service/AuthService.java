@@ -122,7 +122,7 @@ public class AuthService {
 		refreshTokenRepo.save(rt);
 
 		AuthResponseDTO data = AuthResponseDTO.builder()
-		        .userId(user.getId())
+		        .userId(user.getPublicId())
 		        .accessToken(accessToken)
 		        .refreshToken(refreshToken)
 		        .email(user.getEmail())

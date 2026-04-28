@@ -1,7 +1,9 @@
 package com.example.demo.dto.driverDtos;
 
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -9,9 +11,11 @@ import java.util.List;
 
 @Data
 @Builder
+//@AllArgsConstructor
+//@NoArgsConstructor
 public class JourneyResponseDTO {
 
-    private Long journeyId;
+    private String journeyId;
     private String startLocation;
     private String endLocation;
 
@@ -25,4 +29,5 @@ public class JourneyResponseDTO {
 
     private String driverName;
     private String carName;
+    private String numberPlate;
 }
