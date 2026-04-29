@@ -29,7 +29,8 @@ public class SecurityConfig {
 						.requestMatchers("/login", "/register","/refresh").permitAll() // Must be first
 						.requestMatchers("/api/auth/**").permitAll()
 						.requestMatchers("/api/logout/**").permitAll()
-						.requestMatchers("/send-otp", "/reset-password", "/verify-otp").permitAll()
+						.requestMatchers("/send-otp", "/reset-password", "/verify-otp","/chat/**" ).permitAll()
+
 //						.requestMatchers("/admin/**").hasRole("ADMIN") // Then specific
 						.anyRequest().authenticated() // Then general
 				)
@@ -47,7 +48,12 @@ public class SecurityConfig {
 	public org.springframework.web.cors.CorsConfigurationSource corsConfigurationSource() {
 		org.springframework.web.cors.CorsConfiguration configuration = new org.springframework.web.cors.CorsConfiguration();
 
-		configuration.setAllowedOrigins(java.util.List.of("http://localhost:4200")); // Angular URL
+		configuration.setAllowedOrigins(
+				java.util.List.of(
+						"http://localhost:4200",
+						"http://127.0.0.1:5500"
+				)
+		); // Angular URL
 		configuration.setAllowedMethods(java.util.List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
 		configuration.setAllowedHeaders(java.util.List.of("*"));
 		configuration.setAllowCredentials(true);

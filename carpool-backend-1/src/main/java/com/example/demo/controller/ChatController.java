@@ -9,7 +9,6 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.CrossOrigin;
 
 @Controller
-@CrossOrigin(origins = "http://127.0.0.1:5500")
 public class ChatController {
 
     private final SimpMessagingTemplate messagingTemplate;
@@ -21,11 +20,11 @@ public class ChatController {
     // PRIVATE MESSAGE
     @MessageMapping("/private-message")
     public void sendPrivateMessage(ChatMessage message) {
-
         messagingTemplate.convertAndSendToUser(
                 message.getReceiverId(),   // target user
                 "/queue/messages",
                 message
         );
+        System.out.println("Message received:In controller " + message);
     }
 }

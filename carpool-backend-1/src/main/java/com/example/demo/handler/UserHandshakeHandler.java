@@ -4,6 +4,7 @@ import org.springframework.http.server.ServerHttpRequest;
 import org.springframework.stereotype.Component;
 import org.springframework.web.socket.WebSocketHandler;
 import org.springframework.web.socket.server.support.DefaultHandshakeHandler;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import java.security.Principal;
 import java.util.Map;
@@ -16,7 +17,13 @@ public class UserHandshakeHandler extends DefaultHandshakeHandler {
                                       WebSocketHandler wsHandler,
                                       Map<String, Object> attributes) {
 
-        String userId = request.getHeaders().getFirst("userId");
+//        String userId = request.getHeaders().getFirst("userId");
+        String userId = UriComponentsBuilder
+                .fromUri(request.getURI())
+                .build()
+                .getQueryParams()
+                .getFirst("userId");
+        System.out.println("In UserHandShakerHandler userId = " + userId);
 
         return () -> userId; // this becomes logged-in user identity
     }
