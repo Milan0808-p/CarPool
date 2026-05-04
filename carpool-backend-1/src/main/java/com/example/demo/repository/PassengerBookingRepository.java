@@ -26,4 +26,6 @@ public interface PassengerBookingRepository extends JpaRepository<PassengerBooki
 	List<PassengerBooking> findByJourney_Driver_User_Id(Long userId);
 
 	Optional<PassengerBooking> findByPublicId(String bookingId);
+
+	List<PassengerBooking> findByPassenger_Id(long userId);
 }

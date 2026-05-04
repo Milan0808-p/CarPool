@@ -34,4 +34,18 @@ public class PassengerRideController {
        return passengerRideService.bookRide(request,journeyId,userId);
 
     }
+    
+    @GetMapping("/mybookings")
+    public ResponseEntity<ApiResponse<List<PassengerBookingResponseDTO>>> myAllBookings(
+    		Authentication auth){
+    	long userId = (long)auth.getPrincipal();
+    	return passengerRideService.myAllBookings(userId);
+    }
+    
+    @PutMapping("/cancel/{bookingId}")
+    public ResponseEntity<ApiResponse<String>> cancelBooking(@PathVariable String bookingId) {
+
+
+    	return passengerRideService.cancelBooking(bookingId);
+    }
 }

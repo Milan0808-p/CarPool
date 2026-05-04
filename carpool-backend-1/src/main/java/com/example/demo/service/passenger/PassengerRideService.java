@@ -1,13 +1,16 @@
 package com.example.demo.service.passenger;
 
 import com.example.demo.dto.ApiResponse;
+import com.example.demo.dto.driverDtos.DriverBookingListDTO;
 import com.example.demo.dto.driverDtos.JourneyResponseDTO;
 import com.example.demo.dto.kafka.BookingEvent;
 import com.example.demo.dto.passengerRideDTO.PassengerBookingRequestDTO;
 import com.example.demo.dto.passengerRideDTO.PassengerBookingResponseDTO;
 import com.example.demo.dto.passengerRideDTO.PassengerRequestDTO;
 import com.example.demo.entity.authEntity.User;
+import com.example.demo.entity.driverEntity.Driver;
 import com.example.demo.entity.driverEntity.Journey;
+import com.example.demo.entity.passengerEntity.BookingStatus;
 import com.example.demo.entity.passengerEntity.PassengerBooking;
 import com.example.demo.exception.DuplicateBookingException;
 import com.example.demo.exception.InsufficientSeatsException;
@@ -171,5 +174,62 @@ public class PassengerRideService {
         );
     }
 
+	public ResponseEntity<ApiResponse<List<PassengerBookingResponseDTO>>> myAllBookings(long userId) {
+		// TODO Auto-generated method stub
+		List<PassengerBooking> bookings= bookingRepository.findByPassenger_Id(userId);
+		
+		 List<PassengerBookingResponseDTO> response = bookings.stream()
+	                .map(this::toResponse)
+	                .toList();
+		 
+		 return ResponseEntity.ok(
+	                new ApiResponse<>("SUCCESS", "All bookings fetched", response)
+	        );
+	}
+	
+	public PassengerBookingResponseDTO toResponse(PassengerBooking booking) {
+		
+		
+		Journey journey = booking.getJourney();
+	    Driver driver = journey != null ? journey.getDriver() : null;
+	    User user = (driver != null) ? driver.getUser() : null;
+	    
+	    return PassengerBookingResponseDTO.builder()
+                .bookingId(booking.getPublicId())
+                .passengerName(user.getUsername())
+                .journeyId(journey.getId())
+                .startLocation(journey.getStartLocation())
+                .endLocation(journey.getEndLocation())
+                .travelDate(booking.getTravelDate())
+                .departureTime(journey.getDepartureTime())
+                .seatsBooked(booking.getSeatsBooked())
+                .totalPrice(booking.getTotalPrice())
+                .pickupPoint(booking.getPickupPoint())
+                .dropPoint(booking.getDropPoint())
+                .bookingStatus(booking.getStatus().name())
+                .paymentStatus(booking.getPaymentStatus().name())
+                .driverName(
+                		driver != null && driver.getUser() != null
+                                ? driver.getUser().getUsername()
+                                : null
+                )
+                .carName(driver != null ? driver.getCarName() : null)
+                .numberPlate(driver != null ? driver.getCarNumber() : null)
+                .bookingTime(booking.getBookingTime())
+                .build();
+		
+	}
+
+	public ResponseEntity<ApiResponse<String>> cancelBooking(String bookingId) {
+		// TODO Auto-generated method stub
+		PassengerBooking booking = bookingRepository.findByPublicId(bookingId)
+				.orElseThrow(() -> new RuntimeException("Booking not found"));
+
+		booking.setStatus(BookingStatus.CANCELLED);
+
+		bookingRepository.save(booking);
+
+		return ResponseEntity.ok(new ApiResponse<>("SUCCESS", "Booking cancelled", null));
+	}
 
 }
