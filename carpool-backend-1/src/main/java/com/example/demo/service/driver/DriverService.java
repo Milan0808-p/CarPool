@@ -398,4 +398,17 @@ public class DriverService {
 		return ResponseEntity.ok(new ApiResponse<>("success", "Booking status updated", dto));
 	}
 
+    public boolean isProfileComplete(Long userId) {
+
+        Driver profile = driverRepository.findByUserId(userId);
+
+        if (profile == null) return false;
+
+        return profile.getCarName() != null &&
+                profile.getCarNumber() != null &&
+                profile.getLicenseNumber() != null &&
+                profile.getProfileImage() != null &&
+                profile.getLicenseImage() != null &&
+                profile.getAdharImage() != null;
+    }
 }

@@ -33,6 +33,5 @@ public class PassengerRideController {
             @RequestBody PassengerBookingRequestDTO request, @PathVariable String journeyId, Authentication auth) {
         long userId = (long) auth.getPrincipal();
        return passengerRideService.bookRide(request,journeyId,userId);
-
     }
 }

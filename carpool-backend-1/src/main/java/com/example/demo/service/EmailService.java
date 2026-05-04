@@ -74,7 +74,6 @@ public class EmailService {
     public void sendOtpEmail(String toEmail, String otp) {
         String subject = "Your OTP Code";
         String html = "<h3>Your OTP is: " + otp + "</h3><p>Valid for 5 minutes.</p>";
-
         sendEmail(toEmail, subject, html);
     }
 }

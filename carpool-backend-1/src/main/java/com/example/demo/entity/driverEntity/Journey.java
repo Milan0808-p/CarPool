@@ -26,7 +26,6 @@ public class Journey {
 
     @Column(name = "public_id", unique = true, nullable = false, updatable = false)
     protected String publicId;
-    
     private String startLocation;
     private String endLocation;
     private int availableSeats;

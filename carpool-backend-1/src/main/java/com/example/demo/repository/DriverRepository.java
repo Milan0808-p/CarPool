@@ -11,5 +11,6 @@ import com.example.demo.entity.driverEntity.Driver;
 public interface DriverRepository extends JpaRepository<Driver, Long> {
 
 	Driver findByUserId(Long id);
-	
+
+
 }

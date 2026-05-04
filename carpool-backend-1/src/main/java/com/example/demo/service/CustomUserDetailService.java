@@ -1,8 +1,6 @@
 package com.example.demo.service;
-
 import org.springframework.security.core.userdetails.*;
 import org.springframework.stereotype.Service;
-
 import com.example.demo.entity.authEntity.User;
 import com.example.demo.repository.AuthRepository;
 
@@ -11,7 +9,8 @@ public class CustomUserDetailService implements UserDetailsService {
 
     private final AuthRepository repo;
 
-    public CustomUserDetailService(AuthRepository repo) {
+    public CustomUserDetailService(AuthRepository repo)
+    {
         this.repo = repo;
     }
 
@@ -19,7 +18,6 @@ public class CustomUserDetailService implements UserDetailsService {
     public UserDetails loadUserByUsername(String userIdStr) throws UsernameNotFoundException {
 
         Long userId = Long.parseLong(userIdStr);
-
         User user = repo.findById(userId)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found"));
 
@@ -29,4 +27,5 @@ public class CustomUserDetailService implements UserDetailsService {
                 .roles(user.getRole().name())
                 .build();
     }
+
 }

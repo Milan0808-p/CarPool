@@ -122,6 +122,7 @@ public class AuthService {
 		        .refreshToken(refreshToken)
 		        .email(user.getEmail())
 		        .role(user.getRole().name())
+				.username(user.getUsername())
 		        .build();
 
 	    return ResponseEntity.ok(

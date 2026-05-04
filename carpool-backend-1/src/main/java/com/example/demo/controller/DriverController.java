@@ -30,7 +30,7 @@ import com.example.demo.service.passenger.PassengerJourneyService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
-@CrossOrigin(origins = "http://localhost:4200")
+@CrossOrigin("*")
 @RequestMapping("/api/driver")
 @RestController
 @RequiredArgsConstructor
@@ -89,4 +89,13 @@ public class DriverController {
 		Long userId = (Long) auth.getPrincipal();
 	    return driverService.updateBookingStatus(bookingId, userId, status);
 	}
+
+	@GetMapping("/checkprofile")
+	public ResponseEntity<Boolean> checkProfile(Authentication auth) {
+
+		Long userId = (Long) auth.getPrincipal();
+		boolean isComplete = driverService.isProfileComplete(userId);
+		return ResponseEntity.ok(isComplete);
+	}
+
 }

@@ -27,8 +27,6 @@ public interface JourneyRepository extends JpaRepository<Journey, Long> {
 			String endLocation);
     List<Journey> findByStartLocationAndEndLocation(String startLocation, String endLocation);
 
-
-
 //    @Lock(LockModeType.PESSIMISTIC_WRITE)
 //    @Query("SELECT j FROM Journey j WHERE j.id = :id")
 //    Optional<Journey> findByIdForUpdate(Long id);
