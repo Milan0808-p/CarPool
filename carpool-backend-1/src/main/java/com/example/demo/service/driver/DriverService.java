@@ -170,7 +170,7 @@ public class DriverService {
     	Driver driver = driverRepository.findByUserId(driverId);
 //    	        .orElseThrow(() -> new ResourceNotFoundException("Driver not found"));
     	if (driver == null) {
-		    throw new ResourceNotFoundException("Driver not found");
+		    throw new ResourceNotFoundException("Driver profile not found");
 		}
 //    	 User driver = authRepository.findById(driverId)
 //               .orElseThrow(() -> new ResourceNotFoundException("Driver not found"));
