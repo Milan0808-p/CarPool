@@ -58,6 +58,12 @@ public class DriverController {
 		return driverService.createJourney(request,driverId);
 	}
 
+	@GetMapping("/all")
+	public ResponseEntity<ApiResponse<List<JourneyResponseDTO>>> getJourney(Authentication auth) {
+		Long driverId = (Long) auth.getPrincipal();
+		return driverService.createJourney(driverId);
+	}
+	
 	@PutMapping("/update/{journeyId}")
 	public ResponseEntity<ApiResponse<JourneyResponseDTO>> updateJourney(
 			@Valid @RequestBody JourneyUpdateDTO request,
