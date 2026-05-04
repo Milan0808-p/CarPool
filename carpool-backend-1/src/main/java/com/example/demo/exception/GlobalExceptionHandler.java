@@ -40,7 +40,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ApiResponse<Object>> handleGeneric(Exception ex) {
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(new ApiResponse<>("error", "Something went wrong", null));
+                .body(new ApiResponse<>("error", ex.getMessage(), null));
     }
     
     @ExceptionHandler(TokenMissingException.class)

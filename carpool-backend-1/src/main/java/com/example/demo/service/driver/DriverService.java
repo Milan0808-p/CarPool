@@ -411,4 +411,34 @@ public class DriverService {
                 profile.getLicenseImage() != null &&
                 profile.getAdharImage() != null;
     }
+	public ResponseEntity<ApiResponse<List<JourneyResponseDTO>>> createJourney(Long driverId) {
+		// TODO Auto-generated method stub
+		List<Journey> allJourney = journeyRepository.findByDriver_User_Id(driverId);
+
+		List<JourneyResponseDTO> response = allJourney.stream()
+				.map(this::toResponse)
+				.toList();
+
+		return ResponseEntity.ok(new ApiResponse<>("success", "Drivers All Journey", response));
+	}
+
+	public JourneyResponseDTO toResponse(Journey journey) {
+		List<String> stopNames = journey.getStops()
+                .stream()
+                .map(RouteStop::getCityName)
+                .toList();
+		return JourneyResponseDTO.builder()
+        		.journeyId(journey.getPublicId())
+        		.startLocation(journey.getStartLocation())
+        		.endLocation(journey.getEndLocation())
+        		.departureTime(journey.getDepartureTime())
+        		.price(journey.getPrice())
+        		.availableSeats(journey.getAvailableSeats())
+        		.driverName(journey.getDriver().getUser().getUsername())
+        		.carName(journey.getDriver().getCarName())
+                .numberPlate(journey.getDriver().getCarNumber())
+        		.stops(stopNames)
+        		.date(journey.getDate())
+        		.build();
+	}
 }

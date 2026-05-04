@@ -17,7 +17,7 @@ public class EmailService {
 
     private final RestTemplate restTemplate = new RestTemplate();
 
-    // ✅ Generic method (MAIN)
+    // Generic method (MAIN)
     public void sendEmail(String toEmail, String subject, String htmlContent) {
 
         HttpHeaders headers = new HttpHeaders();

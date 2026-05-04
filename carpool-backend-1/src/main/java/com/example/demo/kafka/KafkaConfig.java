@@ -15,54 +15,81 @@ import org.springframework.kafka.support.serializer.JsonSerializer;
 import java.util.HashMap;
 import java.util.Map;
 
-@Configuration
-@EnableKafka
+@Configuration // Marks this class as Spring configuration (defines beans)
+@EnableKafka // Enables Kafka listener support (@KafkaListener)
 public class KafkaConfig {
 
-    // PRODUCER 
+	// PRODUCER CONFIG
+	@Bean
+	public ProducerFactory<String, Object> producerFactory() {
 
-    @Bean
-    public ProducerFactory<String, Object> producerFactory() {
-        Map<String, Object> config = new HashMap<>();
+		// Configuration map for Kafka Producer
+		Map<String, Object> config = new HashMap<>();
 
-        config.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092");
-        config.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
-        config.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, JsonSerializer.class);
+		// Address of Kafka server (broker)
+		config.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092");
 
-        return new DefaultKafkaProducerFactory<>(config);
-    }
+		// Serializer for message key (String → bytes)
+		config.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
 
-    @Bean
-    public KafkaTemplate<String, Object> kafkaTemplate() {
-        return new KafkaTemplate<>(producerFactory());
-    }
+		// Serializer for message value (Java Object → JSON → bytes)
+		config.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, JsonSerializer.class);
 
-    // CONSUMER
+		// Create ProducerFactory using above configs
+		return new DefaultKafkaProducerFactory<>(config);
+	}
 
-    @Bean
-    public ConsumerFactory<String, Object> consumerFactory() {
+	@Bean
+	public KafkaTemplate<String, Object> kafkaTemplate() {
 
-        JsonDeserializer<Object> deserializer = new JsonDeserializer<>();
-        deserializer.addTrustedPackages("*");
+		// KafkaTemplate is used to send messages to Kafka topics
+		// Example: kafkaTemplate.send("topic-name", object);
+		return new KafkaTemplate<>(producerFactory());
+	}
 
-        Map<String, Object> props = new HashMap<>();
 
-        props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092");
-        props.put(ConsumerConfig.GROUP_ID_CONFIG, "booking-group");
-        props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
-        props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, deserializer);
+	// CONSUMER CONFIG
 
-        return new DefaultKafkaConsumerFactory<>(props, new StringDeserializer(), deserializer);
-    }
+	@Bean
+	public ConsumerFactory<String, Object> consumerFactory() {
 
-    @Bean(name = "kafkaListenerContainerFactory")
-    public ConcurrentKafkaListenerContainerFactory<String, Object> kafkaListenerContainerFactory() {
+		// Deserializer to convert JSON → Java Object
+		JsonDeserializer<Object> deserializer = new JsonDeserializer<>();
 
-        ConcurrentKafkaListenerContainerFactory<String, Object> factory =
-                new ConcurrentKafkaListenerContainerFactory<>();
+		// Trust all packages (⚠️ safe for dev, restrict in production)
+		deserializer.addTrustedPackages("*");
 
-        factory.setConsumerFactory(consumerFactory());
+		// Configuration map for Kafka Consumer
+		Map<String, Object> props = new HashMap<>();
 
-        return factory;
-    }
+		// Kafka server address
+		props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092");
+
+		// Consumer group ID (used for load balancing and message sharing)
+		props.put(ConsumerConfig.GROUP_ID_CONFIG, "booking-group");
+
+		// Deserializer for key (bytes → String)
+		props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
+
+		// Deserializer for value (bytes → JSON → Java Object)
+		props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, deserializer);
+
+		// Create ConsumerFactory using configs and deserializers
+		return new DefaultKafkaConsumerFactory<>(props, new StringDeserializer(), deserializer);
+	}
+
+	// LISTENER CONTAINER
+
+	@Bean(name = "kafkaListenerContainerFactory")
+	public ConcurrentKafkaListenerContainerFactory<String, Object> kafkaListenerContainerFactory() {
+
+		// Factory that manages Kafka listeners (@KafkaListener)
+		ConcurrentKafkaListenerContainerFactory<String, Object> factory = new ConcurrentKafkaListenerContainerFactory<>();
+
+		// Set the consumer factory (how messages are read)
+		factory.setConsumerFactory(consumerFactory());
+
+		// Now Spring knows how to consume messages using this config
+		return factory;
+	}
 }

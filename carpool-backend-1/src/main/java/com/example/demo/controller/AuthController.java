@@ -5,6 +5,7 @@ import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
 import com.example.demo.dto.ApiResponse;
 import com.example.demo.dto.authDtos.AuthResponseDTO;
 import com.example.demo.dto.authDtos.LoginRequestDTO;
@@ -12,6 +13,7 @@ import com.example.demo.dto.authDtos.UserDTO;
 import com.example.demo.dto.authDtos.UserResponseDTO;
 import com.example.demo.exception.TokenMissingException;
 import com.example.demo.service.AuthService;
+
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -49,6 +51,4 @@ public class AuthController {
 
 	    return authService.userLogout(token);
 	}
-
-
 }

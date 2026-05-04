@@ -41,6 +41,8 @@ public class PassengerBookingResponseDTO {
     private String paymentStatus;
 
     // Driver & Vehicle
+    
+    
     private String driverName;
     private String carName;
     private String numberPlate;

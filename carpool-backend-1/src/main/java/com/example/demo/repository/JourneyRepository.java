@@ -37,4 +37,6 @@ public interface JourneyRepository extends JpaRepository<Journey, Long> {
     @Query("SELECT j FROM Journey j WHERE j.publicId = :publicId")
     Optional<Journey> findByPublicIdForUpdate(@Param("publicId") String publicId);
 
+	List<Journey> findByDriver_User_Id(Long driverId);
+
 }
